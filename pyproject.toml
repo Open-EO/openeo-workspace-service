@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "openeo-workspace-service"
+version = "0.1.0"
+description = "OpenEO Workspace Extension – reference service implementation"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.2",
+    "python-jose[cryptography]>=3.3",
+    "httpx>=0.27",          # async HTTP for provider health checks
+    "boto3>=1.34",          # S3 provider (optional at runtime)
+    "azure-storage-blob>=12.20",  # Azure provider (optional at runtime)
+    "google-cloud-storage>=2.16",  # GCS provider (optional at runtime)
+    "aiosqlite>=0.20",      # async SQLite for dev/test
+    "asyncpg>=0.29",        # async Postgres for production
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+    "coverage[toml]>=7",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+openeo-workspace-service = "openeo_workspace_service.main:cli"
+
+[tool.ruff]
+line-length = 99
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["openeo_workspace_service"]

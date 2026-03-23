@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: workspaces
+      POSTGRES_USER: openeo
+      POSTGRES_PASSWORD: openeo
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openeo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  workspace-service:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      OPENEO_WS_DATABASE_URL: "postgresql+asyncpg://openeo:openeo@db:5432/workspaces"
+      OPENEO_WS_PUBLIC_URL: "http://localhost:8000/api/v1"
+      OPENEO_WS_LOG_LEVEL: "DEBUG"
+      # Optional: set to your OIDC discovery URL to enable token validation.
+      # OPENEO_WS_OIDC_DISCOVERY_URL: "https://accounts.example.com/.well-known/openid-configuration"
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "alembic upgrade head && openeo-workspace-service"
+
+volumes:
+  pgdata:

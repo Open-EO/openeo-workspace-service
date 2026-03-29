@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# docker-compose.override.yml – local development overrides
+#
+# This file is automatically merged by Docker Compose when you run
+# `docker compose up` from the docker/ directory.
+#
+# It replaces the pre-built image with a live bind-mount of the source tree
+# and enables uvicorn hot-reload, so code changes take effect immediately
+# without rebuilding the image.
+#
+# Usage:
+#   docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml up
+# ---------------------------------------------------------------------------
+version: "3.9"
+
+services:
+  workspace-svc:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: builder          # stop at the builder stage; no need for the slim runtime
+    image: openeo-workspace-svc:dev
+    volumes:
+      # Live source mount – changes are reflected without image rebuild
+      - ../src:/app/src:ro
+      - ../.env:/app/.env:ro
+    working_dir: /app
+    # Override CMD: install the package in editable mode, then run with reload
+    command: >
+      sh -c "pip install -e /app/src --quiet &&
+             uvicorn openeo_workspace_service.main:app
+               --host 0.0.0.0 --port 8000 --reload --reload-dir /app/src"
+    environment:
+      - DEBUG=true
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=openeo
+      - KEYCLOAK_CLIENT_ID=workspace-service
+    # Expose an extra port so you can also run the service natively and hit ES/KC
+    ports:
+      - "8000:8000"
+      - "5678:5678"   # debugpy remote debugger port (optional)
+
+  # Single-node ES with lower memory for laptops
+  elasticsearch:
+    environment:
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m

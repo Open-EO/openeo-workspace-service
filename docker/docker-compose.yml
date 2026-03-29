@@ -1,0 +1,101 @@
+version: "3.9"
+
+# ---------------------------------------------------------------------------
+# openEO Workspace Service – local development stack
+#
+# Services:
+#   elasticsearch  – document store (single-node dev cluster)
+#   kibana         – optional ES UI (http://localhost:5601)
+#   keycloak       – OIDC identity provider (http://localhost:8080)
+#   workspace-svc  – this service (http://localhost:8000)
+# ---------------------------------------------------------------------------
+
+services:
+
+  # --------------------------------------------------------------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: openeo-es
+    environment:
+      - node.name=openeo-es
+      - cluster.name=openeo-cluster
+      - discovery.type=single-node
+      - xpack.security.enabled=false        # disable TLS for local dev
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -qv '\"status\":\"red\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # --------------------------------------------------------------------------
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: openeo-kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    profiles:
+      - debug   # only started with: docker compose --profile debug up
+
+  # --------------------------------------------------------------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: openeo-keycloak
+    command: start-dev --import-realm
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health/ready"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # --------------------------------------------------------------------------
+  workspace-svc:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: openeo-workspace-svc
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=openeo
+      - KEYCLOAK_CLIENT_ID=workspace-service
+      - DEBUG=false
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  esdata:
+    driver: local

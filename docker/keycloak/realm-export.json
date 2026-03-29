@@ -1,0 +1,72 @@
+{
+  "realm": "openeo",
+  "enabled": true,
+  "displayName": "openEO",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+
+  "roles": {
+    "realm": [
+      { "name": "workspace-user",  "description": "Can manage own workspaces" },
+      { "name": "workspace-admin", "description": "Can manage all workspaces" }
+    ]
+  },
+
+  "clients": [
+    {
+      "clientId": "workspace-service",
+      "name": "openEO Workspace Service",
+      "enabled": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "redirectUris": ["http://localhost:8000/*"],
+      "webOrigins": ["http://localhost:8000"],
+      "protocol": "openid-connect",
+      "defaultClientScopes": ["web-origins", "roles", "profile", "email"],
+      "optionalClientScopes": ["offline_access"]
+    },
+    {
+      "clientId": "workspace-service-public",
+      "name": "openEO Workspace Service (Public / PKCE)",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://localhost:*/*", "https://openeo.example/*"],
+      "webOrigins": ["+"],
+      "protocol": "openid-connect"
+    }
+  ],
+
+  "users": [
+    {
+      "username": "alice",
+      "email": "alice@example.com",
+      "firstName": "Alice",
+      "lastName": "Demo",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "alice123", "temporary": false }],
+      "realmRoles": ["workspace-user"]
+    },
+    {
+      "username": "admin-user",
+      "email": "admin@example.com",
+      "firstName": "Admin",
+      "lastName": "Demo",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{ "type": "password", "value": "admin123", "temporary": false }],
+      "realmRoles": ["workspace-user", "workspace-admin"]
+    }
+  ]
+}

@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import re
 
-import pytest
-
 from openeo_workspace_service.models.id_generator import _slugify, make_workspace_id
 
 # Pattern the openEO spec requires workspace IDs to satisfy

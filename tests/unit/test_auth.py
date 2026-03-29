@@ -1,7 +1,7 @@
 """Unit tests for the Keycloak authentication layer."""
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import HTTPException

@@ -3,6 +3,7 @@ openEO Workspace Service – application entry point.
 
 Wires together FastAPI, Elasticsearch, and Keycloak OIDC middleware.
 """
+
 from __future__ import annotations
 
 import uvicorn

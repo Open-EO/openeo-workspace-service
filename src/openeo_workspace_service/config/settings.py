@@ -4,10 +4,10 @@ Application settings loaded from environment variables / .env file.
 All configuration is centralised here so every other module imports
 `get_settings()` rather than reading `os.environ` directly.
 """
+
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Annotated
 
 from pydantic import AnyHttpUrl, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -84,8 +84,8 @@ class Settings(BaseSettings):
     json_logs: bool | None = None
 
     # ------------------------------------------------------------- Rate limiting
-    rate_limit_requests: int = 100   # max requests per window per user
-    rate_limit_window_s: int = 60    # window size in seconds
+    rate_limit_requests: int = 100  # max requests per window per user
+    rate_limit_window_s: int = 60  # window size in seconds
 
     @field_validator("cors_origins", mode="before")
     @classmethod

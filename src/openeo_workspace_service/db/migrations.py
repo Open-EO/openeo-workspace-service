@@ -15,6 +15,7 @@ Usage
     python -m openeo_workspace_service.db.migrations migrate \\
         --from openeo_workspaces_v1 --to openeo_workspaces_v2
 """
+
 from __future__ import annotations
 
 import argparse
@@ -46,7 +47,7 @@ logger = structlog.get_logger(__name__)
 
 async def _index_stats(es: AsyncElasticsearch, index: str) -> None:
     try:
-        info = await es.indices.get(index=index)
+        # info = await es.indices.get(index=index)
         stats = await es.indices.stats(index=index)
         count = stats["indices"][index]["total"]["docs"]["count"]
         health = await es.cluster.health(index=index)

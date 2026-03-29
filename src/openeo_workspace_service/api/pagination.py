@@ -14,6 +14,7 @@ parameters.  For very large datasets a search-after / pit approach would be
 more efficient, but offset pagination is simpler to expose via the openEO links
 convention and adequate for typical workspace counts per user.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -21,7 +22,6 @@ from typing import Annotated, Any, Generic, TypeVar
 from urllib.parse import urlencode
 
 from fastapi import Query
-from pydantic import BaseModel
 
 T = TypeVar("T")
 
@@ -51,7 +51,7 @@ class PaginationParams:
         cls,
         limit: Annotated[int, Query(ge=1, le=500, description="Page size")] = 10,
         offset: Annotated[int, Query(ge=0, description="Number of items to skip")] = 0,
-    ) -> "PaginationParams":
+    ) -> PaginationParams:
         return cls(limit=limit, offset=offset)
 
 

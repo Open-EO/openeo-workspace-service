@@ -15,6 +15,7 @@ All error responses follow the openEO error body convention::
         "links":   []
     }
 """
+
 from __future__ import annotations
 
 import traceback
@@ -56,15 +57,10 @@ def register_exception_handlers(app: FastAPI) -> None:
     """Attach all global exception handlers to *app*."""
 
     @app.exception_handler(RequestValidationError)
-    async def validation_error_handler(
-        request: Request, exc: RequestValidationError
-    ) -> JSONResponse:
+    async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
         # Flatten Pydantic v2 errors into a readable message
         errors = exc.errors()
-        details = "; ".join(
-            f"{'.'.join(str(loc) for loc in e['loc'])}: {e['msg']}"
-            for e in errors
-        )
+        details = "; ".join(f"{'.'.join(str(loc) for loc in e['loc'])}: {e['msg']}" for e in errors)
         logger.debug(
             "request validation failed",
             path=request.url.path,
@@ -80,9 +76,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(HTTPException)
-    async def http_exception_handler(
-        request: Request, exc: HTTPException
-    ) -> JSONResponse:
+    async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
         # Map status codes to openEO error codes
         code_map = {
             400: "BadRequest",
@@ -121,9 +115,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(Exception)
-    async def unhandled_exception_handler(
-        request: Request, exc: Exception
-    ) -> JSONResponse:
+    async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
         logger.error(
             "unhandled exception",
             path=request.url.path,

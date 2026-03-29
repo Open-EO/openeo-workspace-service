@@ -8,9 +8,10 @@ Implements:
   PATCH  /workspaces/{workspace_id}
   DELETE /workspaces/{workspace_id}
 """
+
 from __future__ import annotations
 
-from typing import Annotated, Any, Union
+from typing import Annotated, Any
 
 import structlog
 from elasticsearch import AsyncElasticsearch
@@ -110,8 +111,11 @@ async def list_workspaces(
     """
     repo = WorkspaceRepository(es)
     workspaces = await repo.list(
-        owner_id=user.sub, limit=limit, offset=offset,
-        status_filter=status, type_filter=type,
+        owner_id=user.sub,
+        limit=limit,
+        offset=offset,
+        status_filter=status,
+        type_filter=type,
     )
 
     # Strip heavy optional fields for the list view
@@ -232,7 +236,7 @@ async def create_workspace(
 
 @router.get(
     "/workspaces/{workspace_id}",
-    response_model=Union[WorkspaceReady, WorkspaceUnavailable],
+    response_model=[WorkspaceReady | WorkspaceUnavailable],
     summary="Full metadata for a workspace",
     operation_id="describe-workspace",
 )

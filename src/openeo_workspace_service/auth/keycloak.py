@@ -10,6 +10,7 @@ Flow:
 
 JWKS keys are cached in-process and refreshed when a `kid` is not found.
 """
+
 from __future__ import annotations
 
 import time
@@ -20,7 +21,6 @@ import structlog
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import ExpiredSignatureError, JWTError, jwt
-from jose.exceptions import JWKError
 from pydantic import BaseModel
 
 from openeo_workspace_service.config.settings import Settings, get_settings
@@ -33,7 +33,7 @@ _bearer_scheme = HTTPBearer(auto_error=False)
 # JWKS key cache
 # ---------------------------------------------------------------------------
 
-_jwks_cache: dict[str, Any] = {}      # kid -> JWK dict
+_jwks_cache: dict[str, Any] = {}  # kid -> JWK dict
 _jwks_fetched_at: float = 0.0
 _JWKS_TTL = 300.0  # seconds
 
@@ -75,10 +75,10 @@ async def _get_signing_key(kid: str, settings: Settings) -> dict[str, Any] | Non
 class TokenClaims(BaseModel):
     """Validated claims extracted from the Keycloak access token."""
 
-    sub: str           # unique user identifier
+    sub: str  # unique user identifier
     preferred_username: str | None = None
     email: str | None = None
-    realm_access: dict[str, Any] | None = None   # Keycloak realm roles
+    realm_access: dict[str, Any] | None = None  # Keycloak realm roles
     resource_access: dict[str, Any] | None = None  # Keycloak client roles
     raw: dict[str, Any]
 
@@ -210,9 +210,7 @@ class RequireRole:
     def __init__(self, role: str) -> None:
         self._role = role
 
-    async def __call__(
-        self, user: TokenClaims = Depends(get_current_user)
-    ) -> TokenClaims:
+    async def __call__(self, user: TokenClaims = Depends(get_current_user)) -> TokenClaims:
         if not user.has_role(self._role):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -7,11 +7,13 @@ Provides:
   - WorkspaceRepository  – CRUD against the workspace index
   - ProviderRepository   – read-only access to the provider catalogue
 """
+
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from typing import Any, AsyncIterator
+from datetime import UTC, datetime
+from typing import Any
 
 import structlog
 from elasticsearch import AsyncElasticsearch, NotFoundError
@@ -158,9 +160,7 @@ class WorkspaceRepository:
 
     # ---------------------------------------------------------------- helpers
 
-    def _doc_to_workspace(
-        self, doc: dict[str, Any]
-    ) -> WorkspaceReady | WorkspaceUnavailable:
+    def _doc_to_workspace(self, doc: dict[str, Any]) -> WorkspaceReady | WorkspaceUnavailable:
         src = doc["_source"]
         status = WorkspaceStatus(src["status"])
         if status == WorkspaceStatus.ready:
@@ -169,9 +169,7 @@ class WorkspaceRepository:
 
     # ----------------------------------------------------------------- CRUD
 
-    async def get(
-        self, workspace_id: str, owner_id: str
-    ) -> WorkspaceReady | WorkspaceUnavailable | None:
+    async def get(self, workspace_id: str, owner_id: str) -> WorkspaceReady | WorkspaceUnavailable | None:
         try:
             resp = await self._es.get(index=self._index, id=workspace_id)
         except NotFoundError:
@@ -223,7 +221,7 @@ class WorkspaceRepository:
         owner_id: str,
         doc: dict[str, Any],
     ) -> WorkspaceReady | WorkspaceUnavailable:
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         document = {
             **doc,
             "id": workspace_id,
@@ -237,19 +235,15 @@ class WorkspaceRepository:
         stored = await self._es.get(index=self._index, id=workspace_id)
         return self._doc_to_workspace(stored)
 
-    async def update(
-        self, workspace_id: str, owner_id: str, partial: dict[str, Any]
-    ) -> bool:
+    async def update(self, workspace_id: str, owner_id: str, partial: dict[str, Any]) -> bool:
         existing = await self.get(workspace_id, owner_id)
         if existing is None:
             return False
 
-        from datetime import datetime, timezone
+        from datetime import datetime
 
-        partial["updated_at"] = datetime.now(timezone.utc).isoformat()
-        await self._es.update(
-            index=self._index, id=workspace_id, doc=partial
-        )
+        partial["updated_at"] = datetime.now(UTC).isoformat()
+        await self._es.update(index=self._index, id=workspace_id, doc=partial)
         return True
 
     async def delete(self, workspace_id: str, owner_id: str) -> bool:
@@ -330,8 +324,7 @@ async def seed_default_providers(es: AsyncElasticsearch) -> None:
         "S3": {
             "title": "Amazon S3",
             "description": (
-                "Amazon Simple Storage Service. "
-                "Provides scalable object storage via S3-compatible buckets."
+                "Amazon Simple Storage Service. Provides scalable object storage via S3-compatible buckets."
             ),
             "intents": ["create", "register"],
             "parameters": {

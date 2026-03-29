@@ -19,6 +19,7 @@ This module provides helpers for:
   - Performing a safe alias swap during zero-downtime migration.
   - Listing all physical indices managed by this service.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -119,4 +120,5 @@ def _alias_name(physical_index: str) -> str:
         _alias_name("openeo_workspaces_providers_v1") → "openeo_workspaces_providers"
     """
     import re
+
     return re.sub(r"_v\d+$", "", physical_index)

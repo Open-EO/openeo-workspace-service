@@ -7,23 +7,22 @@ user's workspaces, regardless of ownership.
 
 All routes are prefixed with ``/admin`` and gated behind ``RequireRole``.
 """
+
 from __future__ import annotations
 
 from typing import Annotated, Any
 
 import structlog
-from elasticsearch import AsyncElasticsearch
+from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-
-from elasticsearch import NotFoundError
 
 from openeo_workspace_service.auth.keycloak import RequireRole, TokenClaims
 from openeo_workspace_service.config.settings import get_settings
 from openeo_workspace_service.db.elasticsearch import ProviderRepository, get_es
 from openeo_workspace_service.models.workspace import (
     WorkspaceReady,
-    WorkspaceStatus,
     WorkspacesListResponse,
+    WorkspaceStatus,
     WorkspaceUnavailable,
 )
 
@@ -45,9 +44,7 @@ async def _list_all_workspaces(
     offset: int = 0,
     owner_filter: str | None = None,
 ) -> list[dict[str, Any]]:
-    query: dict[str, Any] = (
-        {"term": {"owner_id": owner_filter}} if owner_filter else {"match_all": {}}
-    )
+    query: dict[str, Any] = {"term": {"owner_id": owner_filter}} if owner_filter else {"match_all": {}}
     resp = await es.search(
         index=_index(es),
         body={
@@ -119,7 +116,7 @@ async def admin_get_workspace(
     try:
         resp = await es.get(index=_index(es), id=workspace_id)
     except NotFoundError:
-        raise HTTPException(status_code=404, detail=f"Workspace '{workspace_id}' not found.")
+        raise HTTPException(status_code=404, detail=f"Workspace '{workspace_id}' not found.") from NotFoundError
 
     return _doc_to_model(resp["_source"])
 
@@ -142,7 +139,7 @@ async def admin_delete_workspace(
     try:
         await es.delete(index=_index(es), id=workspace_id)
     except NotFoundError:
-        raise HTTPException(status_code=404, detail=f"Workspace '{workspace_id}' not found.")
+        raise HTTPException(status_code=404, detail=f"Workspace '{workspace_id}' not found.") from NotFoundError
 
     logger.info("admin deleted workspace", workspace_id=workspace_id, admin=admin.sub)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -187,12 +184,8 @@ async def admin_delete_provider(
     admin: TokenClaims = Depends(_require_admin),
 ) -> Response:
     try:
-        await es.delete(
-            index=get_settings().provider_index, id=provider_name.upper()
-        )
+        await es.delete(index=get_settings().provider_index, id=provider_name.upper())
     except NotFoundError:
-        raise HTTPException(
-            status_code=404, detail=f"Provider '{provider_name}' not found."
-        )
+        raise HTTPException(status_code=404, detail=f"Provider '{provider_name}' not found.") from NotFoundError
     logger.info("admin deleted provider", name=provider_name.upper(), admin=admin.sub)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -1,9 +1,6 @@
 """Unit tests for application settings."""
 from __future__ import annotations
 
-import pytest
-from pydantic import ValidationError
-
 from openeo_workspace_service.config.settings import Settings
 
 

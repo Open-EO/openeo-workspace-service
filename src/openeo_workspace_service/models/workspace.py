@@ -3,26 +3,26 @@ Pydantic v2 models that mirror the openEO Workspaces Extension OpenAPI schemas.
 
 Reference: https://github.com/Open-EO/openeo-api/blob/master/extensions/workspaces/openapi.yaml
 """
+
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
-
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
 
 
-class WorkspaceStatus(str, Enum):
+class WorkspaceStatus(StrEnum):
     provisioning = "provisioning"
     unavailable = "unavailable"
     ready = "ready"
 
 
-class WorkspaceIntent(str, Enum):
+class WorkspaceIntent(StrEnum):
     create = "create"
     register = "register"
 
@@ -143,7 +143,7 @@ class CreateWorkspaceRequest(BaseModel):
     parameters: dict[str, Any] | None = None
 
     @model_validator(mode="after")
-    def _validate_intent(self) -> "CreateWorkspaceRequest":
+    def _validate_intent(self) -> CreateWorkspaceRequest:
         if self.intent != WorkspaceIntent.create:
             raise ValueError("intent must be 'create' for CreateWorkspaceRequest")
         return self
@@ -161,7 +161,7 @@ class RegisterWorkspaceRequest(BaseModel):
     parameters: dict[str, Any]
 
     @model_validator(mode="after")
-    def _validate_intent(self) -> "RegisterWorkspaceRequest":
+    def _validate_intent(self) -> RegisterWorkspaceRequest:
         if self.intent != WorkspaceIntent.register:
             raise ValueError("intent must be 'register' for RegisterWorkspaceRequest")
         return self

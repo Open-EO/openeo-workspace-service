@@ -9,6 +9,7 @@ The ID is taken from the incoming ``X-Request-ID`` header if present
 (useful when an upstream gateway already assigned one), otherwise a new
 UUIDv4 is generated.
 """
+
 from __future__ import annotations
 
 import uuid
@@ -28,9 +29,7 @@ class RequestIDMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp) -> None:
         super().__init__(app)
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         request_id = request.headers.get(_REQUEST_ID_HEADER) or str(uuid.uuid4())
 
         # Bind to structlog context for the duration of this request

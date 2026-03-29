@@ -15,7 +15,6 @@ from httpx import ASGITransport, AsyncClient
 from openeo_workspace_service.auth.keycloak import TokenClaims, get_current_user
 from openeo_workspace_service.db.elasticsearch import get_es
 
-
 # ---------------------------------------------------------------------------
 # Stock user fixtures
 # ---------------------------------------------------------------------------

@@ -4,6 +4,7 @@ Router: GET /workspace_providers
 Lists available workspace providers (S3, GCS, Azure Blob, etc.) stored in
 Elasticsearch.  Authentication is optional per the spec.
 """
+
 from __future__ import annotations
 
 from typing import Any

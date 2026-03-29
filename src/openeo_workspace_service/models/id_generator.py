@@ -15,6 +15,7 @@ Examples
 >>> make_workspace_id("S3 Bucket / prod!")
 's3-bucket-prod-7d3a'
 """
+
 from __future__ import annotations
 
 import re

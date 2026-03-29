@@ -102,11 +102,13 @@ class TestRateLimitMiddlewareIntegration:
 
     @pytest.mark.asyncio
     async def test_rate_limit_headers_present(self):
-        from httpx import ASGITransport, AsyncClient
-        from openeo_workspace_service.app import create_app
-        from openeo_workspace_service.auth.keycloak import get_current_user, TokenClaims
-        from openeo_workspace_service.db.elasticsearch import get_es
         from unittest.mock import AsyncMock
+
+        from httpx import ASGITransport, AsyncClient
+
+        from openeo_workspace_service.app import create_app
+        from openeo_workspace_service.auth.keycloak import TokenClaims, get_current_user
+        from openeo_workspace_service.db.elasticsearch import get_es
 
         app = create_app()
         app.dependency_overrides[get_current_user] = lambda: TokenClaims(sub="rl-user", raw={})
@@ -126,12 +128,14 @@ class TestRateLimitMiddlewareIntegration:
 
     @pytest.mark.asyncio
     async def test_returns_429_when_exceeded(self):
-        from httpx import ASGITransport, AsyncClient
-        from openeo_workspace_service.app import create_app
-        from openeo_workspace_service.auth.keycloak import get_current_user, TokenClaims
-        from openeo_workspace_service.db.elasticsearch import get_es
-        from openeo_workspace_service.config.settings import get_settings
         from unittest.mock import AsyncMock
+
+        from httpx import ASGITransport, AsyncClient
+
+        from openeo_workspace_service.app import create_app
+        from openeo_workspace_service.auth.keycloak import TokenClaims, get_current_user
+        from openeo_workspace_service.config.settings import get_settings
+        from openeo_workspace_service.db.elasticsearch import get_es
 
         # Create app with very tight limit
         get_settings.cache_clear()

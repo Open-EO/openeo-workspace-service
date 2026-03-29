@@ -10,6 +10,7 @@ should be routed to this instance.  It checks:
 1. Elasticsearch cluster health (green or yellow is OK; red or unreachable is not).
 2. Keycloak JWKS endpoint reachability (HTTP 200 expected).
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -35,9 +36,7 @@ router = APIRouter(tags=["Health"])
 
 async def _check_elasticsearch(es: AsyncElasticsearch) -> dict[str, Any]:
     try:
-        health = await asyncio.wait_for(
-            es.cluster.health(timeout="3s"), timeout=5.0
-        )
+        health = await asyncio.wait_for(es.cluster.health(timeout="3s"), timeout=5.0)
         cluster_status = health.get("status", "unknown")
         ok = cluster_status in ("green", "yellow")
         return {"ok": ok, "status": cluster_status}

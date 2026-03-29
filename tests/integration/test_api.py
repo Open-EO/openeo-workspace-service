@@ -10,18 +10,15 @@ Strategy:
 from __future__ import annotations
 
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import pytest_asyncio
-from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from openeo_workspace_service.app import create_app
 from openeo_workspace_service.auth.keycloak import TokenClaims, get_current_user
 from openeo_workspace_service.db.elasticsearch import (
-    ProviderRepository,
-    WorkspaceRepository,
     get_es,
 )
 from openeo_workspace_service.models.workspace import WorkspaceReady, WorkspaceStatus

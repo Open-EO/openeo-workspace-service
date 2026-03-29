@@ -1,19 +1,20 @@
 """Application factory – builds and configures the FastAPI instance."""
+
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from openeo_workspace_service.api.admin import router as admin_router
-from openeo_workspace_service.api.openapi import configure_openapi
 from openeo_workspace_service.api.exceptions import register_exception_handlers
 from openeo_workspace_service.api.health import router as health_router
 from openeo_workspace_service.api.internal import router as internal_router
 from openeo_workspace_service.api.middleware import RequestIDMiddleware
+from openeo_workspace_service.api.openapi import configure_openapi
 from openeo_workspace_service.api.rate_limit import RateLimitMiddleware
 from openeo_workspace_service.api.workspace_providers import router as providers_router
 from openeo_workspace_service.api.workspaces import router as workspaces_router

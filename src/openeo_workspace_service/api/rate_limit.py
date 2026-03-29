@@ -22,12 +22,12 @@ Responses
 - Unauthenticated requests are **not** rate-limited (auth checks apply
   separately at the route level).
 """
+
 from __future__ import annotations
 
 import time
 from collections import deque
 from threading import Lock
-from typing import Deque
 
 import structlog
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -42,7 +42,7 @@ logger = structlog.get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 # subject → deque of request timestamps (float, monotonic)
-_windows: dict[str, Deque[float]] = {}
+_windows: dict[str, deque[float]] = {}
 _lock = Lock()
 
 
@@ -93,9 +93,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._limit = limit
         self._window = window
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         # Extract subject from JWT without full validation (already done by
         # the route-level dependency).  We parse the Authorization header
         # ourselves here just for rate-limit bucketing.
@@ -126,8 +124,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             content={
                 "code": "TooManyRequests",
                 "message": (
-                    f"Rate limit of {self._limit} requests per {self._window}s exceeded. "
-                    f"Retry after {value}s."
+                    f"Rate limit of {self._limit} requests per {self._window}s exceeded. Retry after {value}s."
                 ),
                 "links": [],
             },

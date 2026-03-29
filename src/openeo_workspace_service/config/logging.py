@@ -4,6 +4,7 @@ Logging configuration.
 Configures structlog for structured (JSON in production, pretty-printed in dev)
 log output.  Call ``configure_logging()`` once at application startup.
 """
+
 from __future__ import annotations
 
 import logging

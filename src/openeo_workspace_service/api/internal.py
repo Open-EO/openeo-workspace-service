@@ -16,22 +16,20 @@ If the header is missing or wrong the endpoint returns 401.
 Set ``INTERNAL_API_KEY`` in the environment; if it is unset the endpoint
 is disabled entirely (returns 404 for all requests).
 """
+
 from __future__ import annotations
 
 import secrets
+from datetime import UTC, datetime
 from typing import Annotated, Any
 
 import structlog
-from elasticsearch import AsyncElasticsearch
+from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 from pydantic import BaseModel
 
-from datetime import datetime, timezone
-
-from elasticsearch import NotFoundError
-
 from openeo_workspace_service.config.settings import Settings, get_settings
-from openeo_workspace_service.db.elasticsearch import WorkspaceRepository, get_es
+from openeo_workspace_service.db.elasticsearch import get_es
 from openeo_workspace_service.models.workspace import WorkspaceStatus
 
 logger = structlog.get_logger(__name__)
@@ -52,9 +50,7 @@ async def _require_internal_key(
     if not expected:
         # Feature disabled – return 404 so the route is invisible
         raise HTTPException(status_code=404, detail="Not found")
-    if x_internal_api_key is None or not secrets.compare_digest(
-        x_internal_api_key, expected
-    ):
+    if x_internal_api_key is None or not secrets.compare_digest(x_internal_api_key, expected):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing internal API key.",
@@ -110,7 +106,7 @@ async def update_workspace_status(
 
     # Direct ES update (bypass owner check)
     settings = get_settings()
-    partial["updated_at"] = datetime.now(timezone.utc).isoformat()
+    partial["updated_at"] = datetime.now(UTC).isoformat()
 
     try:
         await es.update(index=settings.workspace_index, id=workspace_id, doc=partial)
@@ -118,7 +114,7 @@ async def update_workspace_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Workspace '{workspace_id}' not found.",
-        )
+        ) from NotFoundError
 
     logger.info(
         "workspace status updated (internal)",

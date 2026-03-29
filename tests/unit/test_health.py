@@ -1,13 +1,12 @@
 """Unit tests for health / readiness endpoints."""
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from openeo_workspace_service.app import create_app
-from openeo_workspace_service.auth.keycloak import get_current_user
 from openeo_workspace_service.db.elasticsearch import get_es
 
 

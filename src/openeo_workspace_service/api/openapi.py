@@ -5,18 +5,17 @@ Import and apply ``configure_openapi(app)`` from the app factory so the
 generated ``/openapi.json`` is fully spec-compliant and shows correct
 security requirements in Swagger UI.
 """
+
 from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
-
 TAGS_METADATA = [
     {
         "name": "Workspaces",
         "description": (
-            "Management of user workspaces. "
-            "All endpoints require a valid Bearer token issued by Keycloak."
+            "Management of user workspaces. All endpoints require a valid Bearer token issued by Keycloak."
         ),
         "externalDocs": {
             "description": "openEO Workspaces Extension spec",

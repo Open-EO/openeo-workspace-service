@@ -1,7 +1,7 @@
 """Unit tests for the Elasticsearch alias management module."""
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, call
+from unittest.mock import AsyncMock
 
 import pytest
 

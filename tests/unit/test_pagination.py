@@ -1,8 +1,6 @@
 """Unit tests for the pagination utility module."""
 from __future__ import annotations
 
-import pytest
-
 from openeo_workspace_service.api.pagination import (
     PagedResult,
     PaginationParams,

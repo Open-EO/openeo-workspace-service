@@ -6,15 +6,19 @@ client so no cluster is required.
 """
 from __future__ import annotations
 
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from openeo_workspace_service.db.elasticsearch import (
     ProviderRepository,
     WorkspaceRepository,
 )
-from openeo_workspace_service.models.workspace import WorkspaceReady, WorkspaceStatus, WorkspaceUnavailable
-
+from openeo_workspace_service.models.workspace import (
+    WorkspaceReady,
+    WorkspaceStatus,
+    WorkspaceUnavailable,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -4,6 +4,7 @@ pydantic==2.4.2
 pydantic-settings==2.0.3
 elasticsearch==8.10.0
 pyjwt==2.8.0
+cryptography==42.0.8
 python-multipart==0.0.6
 httpx==0.25.0
 tenacity==8.2.3

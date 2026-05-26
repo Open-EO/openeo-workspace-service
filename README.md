@@ -76,6 +76,10 @@ KEYCLOAK_SERVER_URL=https://keycloak.example.com
 KEYCLOAK_REALM=openeo
 KEYCLOAK_CLIENT_ID=openeo-workspaces
 KEYCLOAK_CLIENT_SECRET=your-secret
+KEYCLOAK_ISSUER=
+KEYCLOAK_VERIFY_TLS=true
+KEYCLOAK_VERIFY_AUDIENCE=true
+KEYCLOAK_JWKS_CACHE_TTL_SECONDS=300
 
 # Elasticsearch
 ELASTICSEARCH_HOST=localhost
@@ -222,6 +226,19 @@ The API uses OAuth2/OIDC via KeyCloak:
 3. API validates token signature with KeyCloak's public keys
 4. User ID extracted from token's `sub` claim
 5. All workspace operations scoped to authenticated user
+
+Get an access token (client credentials flow):
+
+```bash
+TOKEN=$(curl -s -X POST "https://keycloak.example.com/realms/openeo/protocol/openid-connect/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=openeo-workspaces" \
+  -d "client_secret=<client-secret>" | python -c 'import json,sys;print(json.load(sys.stdin)["access_token"])')
+
+curl https://openeo.example/api/v1/workspaces \
+  -H "Authorization: Bearer ${TOKEN}"
+```
 
 ## Project Structure
 

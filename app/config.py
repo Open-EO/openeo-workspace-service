@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     keycloak_realm: str = "openeo"
     keycloak_client_id: str = "openeo-workspaces"
     keycloak_client_secret: str = "change-me"
+    keycloak_issuer: Optional[str] = None
+    keycloak_verify_tls: bool = True
+    keycloak_verify_audience: bool = True
+    keycloak_jwks_cache_ttl_seconds: int = 300
     jwt_algorithm: str = "RS256"
 
     # Elasticsearch

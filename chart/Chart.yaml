@@ -1,0 +1,30 @@
+apiVersion: v2
+name: openeo-workspaces-api
+description: OpenEO Workspaces API - A FastAPI implementation for managing workspaces
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+keywords:
+  - openeo
+  - workspaces
+  - api
+
+maintainers:
+  - name: OpenEO Consortium
+    url: https://openeo.org
+
+home: https://github.com/Open-EO/openeo-api
+sources:
+  - https://github.com/Open-EO/openeo-api
+
+dependencies:
+  - name: elasticsearch
+    version: "8.10.0"
+    repository: "https://helm.elastic.co"
+    condition: elasticsearch.enabled
+  - name: keycloak
+    version: "19.2.0"
+    repository: "https://codecentric.github.io/helm-charts"
+    condition: keycloak.enabled
+

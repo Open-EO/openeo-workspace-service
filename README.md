@@ -1,316 +1,319 @@
-# openeo-workspace-service
+# OpenEO Workspaces API
 
-**VITO implementation of the [openEO Workspaces Extension API](https://github.com/Open-EO/openeo-api/blob/master/extensions/workspaces/openapi.yaml)**
+A FastAPI implementation of the [openEO Workspaces Extension](https://github.com/Open-EO/openeo-api/tree/draft/extensions/workspaces) for managing cloud storage workspaces with KeyCloak authentication and Elasticsearch backend.
 
-Built with **FastAPI**, backed by **Elasticsearch**, and secured with **Keycloak** (OIDC / Bearer JWT).
+## Features
 
----
+- **OpenEO API Compliance**: Full implementation of the openEO Workspaces Extension API
+- **OAuth2/OIDC Auth**: Integration with KeyCloak for authentication and authorization
+- **Elasticsearch Backend**: Scalable NoSQL database for workspace metadata
+- **Container Ready**: Docker image and docker-compose for local development
+- **Kubernetes Ready**: Complete Helm chart for production deployment
+- **RESTful API**: FastAPI with automatic OpenAPI documentation
 
-## Table of Contents
-
-- [Architecture](#architecture)
-- [API Overview](#api-overview)
-- [Quick Start (Docker)](#quick-start-docker)
-- [Local Development](#local-development)
-- [Configuration Reference](#configuration-reference)
-- [Authentication & Authorisation](#authentication--authorisation)
-- [Project Layout](#project-layout)
-- [Running Tests](#running-tests)
-- [Seeding Providers](#seeding-providers)
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────┐
-│           openEO Client             │
-│  (openeo-python-client / curl / …)  │
-└────────────────┬────────────────────┘
-                 │  HTTPS  Bearer JWT
-                 ▼
-┌─────────────────────────────────────┐
-│      openeo-workspace-service       │
-│  FastAPI · Pydantic v2 · structlog  │
-│                                     │
-│  ┌──────────────┐ ┌──────────────┐  │
-│  │  /workspace_ │ │  /workspaces │  │
-│  │  providers   │ │  (CRUD)      │  │
-│  └──────────────┘ └──────────────┘  │
-└──────────┬──────────────┬───────────┘
-           │              │
-           ▼              ▼
-┌──────────────┐  ┌──────────────────┐
-│ Elasticsearch│  │     Keycloak     │
-│  (documents) │  │  (JWKS / OIDC)   │
-└──────────────┘  └──────────────────┘
-```
-
-Every request to a protected endpoint must carry a valid **Bearer** JWT issued by Keycloak.
-The service validates the token against Keycloak's JWKS endpoint (keys are cached for 5 minutes).
-The `sub` claim is used as the workspace `owner_id` to enforce per-user access control.
-
----
-
-## API Overview
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `GET` | `/workspace_providers` | Optional | List available storage providers |
-| `GET` | `/workspaces` | Required | List the caller's workspaces |
-| `POST` | `/workspaces` | Required | Create or register a workspace |
-| `GET` | `/workspaces/{id}` | Required | Full workspace metadata |
-| `PATCH` | `/workspaces/{id}` | Required | Update title / description |
-| `DELETE` | `/workspaces/{id}` | Required | Delete a workspace |
-| `GET` | `/health` | None | Liveness probe |
-
-Interactive docs are available at **`/docs`** (Swagger UI) and **`/redoc`**.
-
-### POST /workspaces – intents
-
-The body must include an `intent` discriminator:
-
-**`intent: create`** – ask the back-end to provision a new workspace:
-```json
-{
-  "intent": "create",
-  "title": "My Analysis Workspace",
-  "type": "S3",
-  "parameters": { "region": "eu-west-1" }
-}
-```
-
-**`intent: register`** – attach an existing external storage location:
-```json
-{
-  "intent": "register",
-  "type": "S3",
-  "url": "https://my-bucket.s3.eu-west-1.amazonaws.com",
-  "parameters": {
-    "aws_access_key_id": "AKIAI…",
-    "aws_secret_access_key": "…",
-    "bucket_name": "my-bucket"
-  }
-}
-```
-
----
-
-## Quick Start (Docker)
-
-```bash
-# 1. Clone
-git clone https://github.com/Open-EO/openeo-workspace-service.git
-cd openeo-workspace-service
-
-# 2. Configure
-cp .env.example .env
-# Edit .env if needed (defaults work out-of-the-box with docker compose)
-
-# 3. Start all services
-docker compose -f docker/docker-compose.yml up -d
-
-# 4. Check health
-curl http://localhost:8000/health
-# {"status":"ok"}
-
-# 5. Get a token (pre-seeded user: alice / alice123)
-./scripts/get_token.sh alice alice123
-
-# 6. Call the API
-TOKEN=<paste token here>
-curl -H "Authorization: Bearer $TOKEN" http://localhost:8000/workspaces
-```
-
-**Services started:**
-
-| Service | URL |
-|---------|-----|
-| Workspace API | http://localhost:8000 |
-| Swagger UI | http://localhost:8000/docs |
-| Keycloak admin | http://localhost:8080 (admin / admin) |
-| Elasticsearch | http://localhost:9200 |
-
-> **Kibana** (ES UI) is available with `docker compose --profile debug up`.
-
----
-
-## Local Development
+## Quick Start
 
 ### Prerequisites
 
 - Python 3.11+
-- A running Elasticsearch (≥ 8.x) and Keycloak (≥ 24) – use Docker for convenience
+- Docker & Docker Compose (for containerized deployment)
+- Kubernetes 1.21+ (for Helm deployment)
 
-### Install
+### Local Development
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-```
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd openeo-workspaces-api
+   ```
 
-### Run
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```bash
-cp .env.example .env
-# Edit .env to point to your ES + Keycloak instances
-openeo-workspace-service
-# or: uvicorn openeo_workspace_service.main:app --reload
-```
+3. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your KeyCloak and Elasticsearch settings
+   ```
 
-### Code quality
+4. **Run with docker-compose**
+   ```bash
+   docker-compose up -d
+   ```
 
-```bash
-# Lint + format
-ruff check src tests
-ruff format src tests
+5. **Access the API**
+   - API Docs: http://localhost:8000/api/v1/docs
+   - API Root: http://localhost:8000/api/v1
+   - Health Check: http://localhost:8000/health
+   - KeyCloak Admin: http://localhost:8080/admin (admin/admin)
 
-# Type-check
-mypy src
-```
+### Endpoints
 
----
+#### Public Endpoints
+- `GET /api/v1/workspace_providers` - List supported workspace providers
+- `GET /health` - Health check
 
-## Configuration Reference
+#### Protected Endpoints (Require Bearer Token)
+- `GET /api/v1/workspaces` - List user's workspaces
+- `POST /api/v1/workspaces` - Create a new workspace
+- `GET /api/v1/workspaces/{workspace_id}` - Get workspace details
+- `PATCH /api/v1/workspaces/{workspace_id}` - Update workspace metadata
+- `DELETE /api/v1/workspaces/{workspace_id}` - Delete workspace
 
-All settings are loaded from environment variables or a `.env` file.
+## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ENVIRONMENT` | `production` | Deployment environment label |
-| `DEBUG` | `false` | Enable debug logging and hot-reload |
-| `SERVER_HOST` | `0.0.0.0` | Bind address |
-| `SERVER_PORT` | `8000` | Listen port |
-| `CORS_ORIGINS` | `*` | Comma-separated allowed origins |
-| `ELASTICSEARCH_URL` | `http://localhost:9200` | ES cluster URL |
-| `ELASTICSEARCH_USERNAME` | *(none)* | ES basic auth username |
-| `ELASTICSEARCH_PASSWORD` | *(none)* | ES basic auth password |
-| `ELASTICSEARCH_CA_CERTS` | *(none)* | Path to CA bundle for TLS |
-| `ELASTICSEARCH_VERIFY_CERTS` | `true` | Verify ES TLS certificates |
-| `ELASTICSEARCH_INDEX_PREFIX` | `openeo_workspaces` | Prefix for ES index names |
-| `KEYCLOAK_URL` | `http://localhost:8080` | Keycloak base URL |
-| `KEYCLOAK_REALM` | `openeo` | Keycloak realm |
-| `KEYCLOAK_CLIENT_ID` | `workspace-service` | OIDC client ID |
-| `KEYCLOAK_CLIENT_SECRET` | *(none)* | OIDC client secret (confidential clients) |
-| `JWT_ALGORITHMS` | `RS256` | Accepted JWT signing algorithms |
-| `JWT_AUDIENCE` | *(keycloak_client_id)* | Expected `aud` claim |
-| `DEFAULT_WORKSPACE_PROVIDER` | *(none)* | Fallback provider for `intent=create` |
-
----
-
-## Authentication & Authorisation
-
-### Token validation
-
-1. The service reads `KEYCLOAK_URL` + `KEYCLOAK_REALM` to derive the JWKS URI:
-   `{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/certs`
-2. On each request the JWT header is decoded (without verification) to extract `kid`.
-3. The matching public key is looked up in the JWKS cache (TTL 5 min) and used to verify the signature, expiry, issuer, and audience.
-4. The `sub` claim becomes the `owner_id` stored alongside every workspace document.
-
-### Role-based access
-
-Keycloak realm roles are extracted from the `realm_access.roles` claim.
-The `RequireRole` dependency factory can be used in any route:
-
-```python
-from openeo_workspace_service.auth.keycloak import RequireRole
-
-@router.delete("/admin/workspaces/{id}")
-async def admin_delete(user = Depends(RequireRole("workspace-admin"))):
-    ...
-```
-
-Pre-seeded roles (see `docker/keycloak/realm-export.json`):
-
-| Role | Description |
-|------|-------------|
-| `workspace-user` | Manage own workspaces |
-| `workspace-admin` | Manage all workspaces |
-
----
-
-## Project Layout
-
-```
-openeo-workspace-service/
-├── src/openeo_workspace_service/
-│   ├── main.py               # uvicorn entry point
-│   ├── app.py                # FastAPI factory + lifespan hooks
-│   ├── config/
-│   │   └── settings.py       # pydantic-settings configuration
-│   ├── models/
-│   │   └── workspace.py      # Pydantic v2 domain models (mirrors OpenAPI spec)
-│   ├── db/
-│   │   └── elasticsearch.py  # Client, index mappings, repositories
-│   ├── auth/
-│   │   └── keycloak.py       # JWKS caching, JWT validation, FastAPI deps
-│   └── api/
-│       ├── workspace_providers.py   # GET /workspace_providers
-│       └── workspaces.py            # /workspaces CRUD
-├── tests/
-│   ├── unit/
-│   │   ├── test_models.py    # Pydantic model validation tests
-│   │   └── test_auth.py      # Auth unit tests (mocked JWKS)
-│   └── integration/
-│       └── test_api.py       # Full route tests (in-memory ES + auth overrides)
-├── docker/
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   └── keycloak/
-│       └── realm-export.json # Pre-seeded realm, clients, and users
-├── scripts/
-│   ├── seed_providers.py     # Seed provider catalogue into ES
-│   └── get_token.sh          # Get a Keycloak token for manual testing
-├── .env.example
-└── pyproject.toml
-```
-
----
-
-## Running Tests
+### Environment Variables
 
 ```bash
-# All tests (unit + integration) — no real ES or Keycloak required
-pytest
+# API
+DEBUG=false
+API_VERSION=v1
 
-# With coverage report
-pytest --cov=openeo_workspace_service --cov-report=html
-open htmlcov/index.html
+# KeyCloak
+KEYCLOAK_SERVER_URL=https://keycloak.example.com
+KEYCLOAK_REALM=openeo
+KEYCLOAK_CLIENT_ID=openeo-workspaces
+KEYCLOAK_CLIENT_SECRET=your-secret
+
+# Elasticsearch
+ELASTICSEARCH_HOST=localhost
+ELASTICSEARCH_PORT=9200
+ELASTICSEARCH_USER=elastic
+ELASTICSEARCH_PASSWORD=password
+ELASTICSEARCH_SCHEME=https
 ```
 
----
+## Deployment
 
-## Seeding Providers
+### Docker
 
-On startup the service automatically seeds three built-in providers (`S3`, `GCS`, `AZURE_BLOB`) into Elasticsearch if the provider index is empty.
-
-To re-seed manually (e.g. after clearing the index):
+Build and run the container:
 
 ```bash
-python scripts/seed_providers.py --reset
+docker build -t openeo-workspaces-api:0.1.0 .
+docker run -p 8000:8000 \
+  -e KEYCLOAK_SERVER_URL=https://keycloak.example.com \
+  -e ELASTICSEARCH_HOST=elasticsearch.example.com \
+  openeo-workspaces-api:0.1.0
 ```
 
-To add a custom provider, upsert it directly via the `ProviderRepository`:
+### Kubernetes with Helm
 
-```python
-from openeo_workspace_service.db.elasticsearch import ProviderRepository, get_es_client
+1. **Add Helm repositories**
+   ```bash
+   helm repo add elastic https://helm.elastic.co
+   helm repo add codecentric https://codecentric.github.io/helm-charts
+   helm repo update
+   ```
 
-async with get_es_client() as es:
-    repo = ProviderRepository(es)
-    await repo.upsert("MY_PROVIDER", {
-        "title": "My Custom Provider",
-        "intents": ["register"],
-        "parameters": {
-            "endpoint": {"description": "Storage endpoint URL", "type": "string"},
-        },
-        "links": [],
-    })
+2. **Install the chart**
+   ```bash
+   helm install openeo-workspaces ./chart \
+     --namespace openeo \
+     --create-namespace \
+     --values chart/values.yaml
+   ```
+
+3. **Configure external services** (if not using chart dependencies)
+   ```bash
+   helm install openeo-workspaces ./chart \
+     --set keycloak.external.enabled=true \
+     --set keycloak.external.serverUrl=https://keycloak.example.com \
+     --set elasticsearch.external.enabled=true \
+     --set elasticsearch.external.host=elasticsearch.example.com
+   ```
+
+4. **Verify deployment**
+   ```bash
+   kubectl get pods -n openeo
+   kubectl logs -n openeo svc/openeo-workspaces-api
+   ```
+
+## Workspace Providers
+
+The API supports the following workspace providers:
+
+### Amazon S3
+- **Intent**: create, register
+- **Parameters**:
+  - `aws_access_key_id`: AWS access key
+  - `aws_secret_access_key`: AWS secret key
+  - `bucket_name`: S3 bucket name
+
+### Google Cloud Storage
+- **Intent**: create, register
+- **Parameters**:
+  - `project_id`: GCP project ID
+  - `service_account_key`: Service account JSON key
+  - `bucket_name`: GCS bucket name
+
+### Azure Blob Storage
+- **Intent**: create, register
+- **Parameters**:
+  - `connection_string`: Azure storage connection string
+  - `container_name`: Container name
+
+## API Examples
+
+### Get Workspace Providers
+
+```bash
+curl https://openeo.example/api/v1/workspace_providers
 ```
 
----
+### Create a Workspace
+
+```bash
+curl -X POST https://openeo.example/api/v1/workspaces \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "intent": "create",
+    "type": "s3",
+    "title": "My Workspace",
+    "description": "A workspace for analysis results",
+    "parameters": {
+      "bucket_name": "my-bucket"
+    }
+  }'
+```
+
+### List Workspaces
+
+```bash
+curl https://openeo.example/api/v1/workspaces \
+  -H "Authorization: Bearer {token}"
+```
+
+### Get Workspace Details
+
+```bash
+curl https://openeo.example/api/v1/workspaces/{workspace_id} \
+  -H "Authorization: Bearer {token}"
+```
+
+### Update Workspace
+
+```bash
+curl -X PATCH https://openeo.example/api/v1/workspaces/{workspace_id} \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Updated Title",
+    "description": "Updated description"
+  }'
+```
+
+### Delete Workspace
+
+```bash
+curl -X DELETE https://openeo.example/api/v1/workspaces/{workspace_id} \
+  -H "Authorization: Bearer {token}"
+```
+
+## Authentication Flow
+
+The API uses OAuth2/OIDC via KeyCloak:
+
+1. Client obtains a Bearer token from KeyCloak
+2. Client includes token in `Authorization: Bearer {token}` header
+3. API validates token signature with KeyCloak's public keys
+4. User ID extracted from token's `sub` claim
+5. All workspace operations scoped to authenticated user
+
+## Project Structure
+
+```
+.
+├── app/
+│   ├── __init__.py
+│   ├── config.py              # Configuration settings
+│   ├── auth.py                # KeyCloak authentication
+│   ├── db.py                  # Elasticsearch client
+│   ├── models.py              # Pydantic models
+│   └── routes/
+│       ├── providers.py       # Workspace providers endpoints
+│       └── workspaces.py      # Workspace CRUD endpoints
+├── chart/
+│   ├── Chart.yaml
+│   ├── values.yaml
+│   └── templates/             # Kubernetes manifests
+├── main.py                    # FastAPI application
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── setup.py
+└── README.md
+```
+
+## Development
+
+### Running Tests
+
+```bash
+pip install pytest pytest-asyncio
+pytest tests/
+```
+
+### Code Formatting
+
+```bash
+pip install black isort
+black app/ main.py
+isort app/ main.py
+```
+
+### Linting
+
+```bash
+pip install flake8
+flake8 app/ main.py
+```
+
+## Troubleshooting
+
+### Connection Issues
+
+**Elasticsearch cannot connect:**
+- Verify `elasticsearch` service is running
+- Check`ELASTICSEARCH_HOST` and `ELASTICSEARCH_PORT` settings
+- Ensure network connectivity between containers
+
+**KeyCloak certificate errors:**
+- In development, SSL verification is disabled for convenience
+- For production, ensure proper certificates and set `ELASTICSEARCH_SCHEME=https`
+
+### API Errors
+
+**401 Unauthorized:**
+- Token has expired or is invalid
+- Verify token is included in `Authorization` header
+- Check KeyCloak settings in `.env`
+
+**404 Not Found:**
+- Workspace doesn't exist or doesn't belong to user
+- Check workspace_id in URL
+
+**500 Internal Server Error:**
+- Check application logs with `docker-compose logs openeo-workspaces-api`
+- Verify database connections
 
 ## License
 
-Apache 2.0 – see [LICENSE](LICENSE).
+Apache License 2.0 - See LICENSE file for details
+
+## Contact
+
+- OpenEO Consortium: https://openeo.org
+- Email: openeo.psc@uni-muenster.de
+
+## References
+
+- [openEO API](https://openeo.org)
+- [Workspaces Extension](https://github.com/Open-EO/openeo-api/tree/draft/extensions/workspaces)
+- [FastAPI Documentation](https://fastapi.tiangolo.com)
+- [Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
+- [KeyCloak Documentation](https://www.keycloak.org/documentation)
+

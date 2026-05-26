@@ -1,1 +1,0 @@
-"""openEO Workspace Service."""

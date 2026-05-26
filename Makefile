@@ -1,118 +1,81 @@
-# ---------------------------------------------------------------------------
-# openeo-workspace-service – developer convenience targets
-# ---------------------------------------------------------------------------
+.PHONY: help install dev test lint format build docker-build docker-up docker-down helm-install helm-uninstall clean
 
-.DEFAULT_GOAL := help
-PYTHON        ?= python3
-SRC           := src/openeo_workspace_service
-TESTS         := tests
-DC            := docker compose -f docker/docker-compose.yml
+help:
+	@echo "OpenEO Workspaces API - Development Commands"
+	@echo ""
+	@echo "Development:"
+	@echo "  make install          Install dependencies"
+	@echo "  make dev              Run development server with auto-reload"
+	@echo "  make test             Run tests"
+	@echo "  make lint             Run linting checks"
+	@echo "  make format           Format code"
+	@echo ""
+	@echo "Docker:"
+	@echo "  make docker-build     Build Docker image"
+	@echo "  make docker-up        Start services with docker-compose"
+	@echo "  make docker-down      Stop services"
+	@echo "  make docker-logs      View service logs"
+	@echo ""
+	@echo "Kubernetes/Helm:"
+	@echo "  make helm-install     Install Helm chart"
+	@echo "  make helm-uninstall   Uninstall Helm chart"
+	@echo "  make helm-values      Show Helm values"
+	@echo ""
+	@echo "Cleanup:"
+	@echo "  make clean            Remove generated files"
 
-# ---- Colours ---------------------------------------------------------------
-GREEN  := \033[0;32m
-YELLOW := \033[0;33m
-RESET  := \033[0m
+install:
+	pip install -r requirements.txt
 
-.PHONY: help install install-dev lint format typecheck test test-unit test-integration \
-        cov up down logs shell seed-providers get-token migrate-status clean
+dev:
+	uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-help:   ## Show this help message
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-	  | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-22s$(RESET) %s\n", $$1, $$2}'
+test:
+	pytest tests/ -v
 
-# ---- Installation ----------------------------------------------------------
+lint:
+	flake8 app/ main.py
+	isort --check-only app/ main.py
+	black --check app/ main.py
 
-install:        ## Install runtime dependencies
-	pip install -e .
+format:
+	isort app/ main.py
+	black app/ main.py
 
-install-dev:    ## Install all dependencies including dev/test extras
-	pip install -e ".[dev]"
-	pre-commit install
+build:
+	python setup.py build
 
-# ---- Code quality ----------------------------------------------------------
+docker-build:
+	docker build -t openeo-workspaces-api:0.1.0 .
 
-lint:           ## Run ruff linter
-	ruff check $(SRC) $(TESTS)
+docker-up:
+	docker-compose up -d
 
-format:         ## Run ruff formatter
-	ruff format $(SRC) $(TESTS)
+docker-down:
+	docker-compose down
 
-format-check:   ## Check formatting without modifying files
-	ruff format --check $(SRC) $(TESTS)
+docker-logs:
+	docker-compose logs -f openeo-workspaces-api
 
-typecheck:      ## Run mypy type checker
-	mypy $(SRC)
+helm-install:
+	helm dependency update ./chart
+	helm install openeo-workspaces ./chart \
+		--namespace openeo \
+		--create-namespace \
+		--values chart/values.yaml
 
-check: lint format-check typecheck  ## Run all code-quality checks
+helm-uninstall:
+	helm uninstall openeo-workspaces --namespace openeo
 
-# ---- Testing ---------------------------------------------------------------
+helm-values:
+	helm values ./chart
 
-test:           ## Run the full test suite
-	pytest $(TESTS) -v
+clean:
+	find . -type f -name '*.pyc' -delete
+	find . -type d -name '__pycache__' -delete
+	find . -type d -name '.pytest_cache' -delete
+	find . -type d -name '.mypy_cache' -delete
+	find . -type d -name '.tox' -delete
+	find . -type d -name 'htmlcov' -delete
+	rm -rf build/ dist/ *.egg-info/
 
-test-unit:      ## Run unit tests only
-	pytest $(TESTS)/unit -v
-
-test-integration:  ## Run integration tests only
-	pytest $(TESTS)/integration -v
-
-cov:            ## Run tests with HTML coverage report
-	pytest $(TESTS) --cov=$(SRC) --cov-report=html --cov-report=term-missing
-	@echo "$(YELLOW)Coverage report: htmlcov/index.html$(RESET)"
-
-cov-xml:        ## Run tests with XML coverage (for CI)
-	pytest $(TESTS) --cov=$(SRC) --cov-report=xml
-
-# ---- Local dev stack -------------------------------------------------------
-
-up:             ## Start the full dev stack (ES + Keycloak + service)
-	$(DC) up -d
-	@echo "$(GREEN)Services started:$(RESET)"
-	@echo "  API:      http://localhost:8000"
-	@echo "  Docs:     http://localhost:8000/docs"
-	@echo "  Keycloak: http://localhost:8080  (admin/admin)"
-	@echo "  ES:       http://localhost:9200"
-
-up-debug:       ## Start the full dev stack including Kibana
-	$(DC) --profile debug up -d
-
-down:           ## Stop the dev stack
-	$(DC) down
-
-logs:           ## Tail logs from all services
-	$(DC) logs -f
-
-logs-svc:       ## Tail logs from the workspace service only
-	$(DC) logs -f workspace-svc
-
-shell:          ## Open a shell in the running workspace-svc container
-	$(DC) exec workspace-svc /bin/sh
-
-# ---- Data management -------------------------------------------------------
-
-seed-providers: ## Seed default workspace providers into Elasticsearch
-	$(PYTHON) scripts/seed_providers.py
-
-seed-reset:     ## Reset and re-seed workspace providers
-	$(PYTHON) scripts/seed_providers.py --reset
-
-get-token:      ## Fetch a Keycloak Bearer token for alice (local dev)
-	@bash scripts/get_token.sh alice alice123
-
-get-token-admin: ## Fetch a Keycloak Bearer token for admin-user
-	@bash scripts/get_token.sh admin-user admin123
-
-migrate-status: ## Show Elasticsearch index health and document counts
-	$(PYTHON) -m openeo_workspace_service.db.migrations status
-
-# ---- Docker image ----------------------------------------------------------
-
-build:          ## Build the Docker image
-	docker build -f docker/Dockerfile -t openeo-workspace-service:dev .
-
-# ---- Cleanup ---------------------------------------------------------------
-
-clean:          ## Remove Python build artefacts and caches
-	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete
-	rm -rf .coverage htmlcov coverage.xml .mypy_cache .ruff_cache dist build *.egg-info

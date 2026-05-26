@@ -84,7 +84,7 @@ openeo-workspaces-api/
 - Startup/shutdown event handlers
 
 **Routes** (`app/routes/`)
-- `providers.py`: List supported workspace providers (S3, GCS, Azure)
+- `providers.py`: List supported workspace providers (S3)
 - `workspaces.py`: Full CRUD operations for workspaces
 
 **Authentication** (`app/auth.py`)

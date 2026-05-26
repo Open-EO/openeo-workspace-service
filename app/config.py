@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     max_workspace_quota: int = 1099511627776  # 1TB in bytes
 
     # Supported providers
-    supported_providers: list = ["s3", "gcs", "azure"]
+    supported_providers: list = ["s3"]
 
 
 settings = Settings()

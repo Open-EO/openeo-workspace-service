@@ -139,25 +139,12 @@ docker run -p 8000:8000 \
 
 The API supports the following workspace providers:
 
-### Amazon S3
+### S3
 - **Intent**: create, register
 - **Parameters**:
   - `aws_access_key_id`: AWS access key
   - `aws_secret_access_key`: AWS secret key
   - `bucket_name`: S3 bucket name
-
-### Google Cloud Storage
-- **Intent**: create, register
-- **Parameters**:
-  - `project_id`: GCP project ID
-  - `service_account_key`: Service account JSON key
-  - `bucket_name`: GCS bucket name
-
-### Azure Blob Storage
-- **Intent**: create, register
-- **Parameters**:
-  - `connection_string`: Azure storage connection string
-  - `container_name`: Container name
 
 ## API Examples
 

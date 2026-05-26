@@ -105,7 +105,7 @@ config:
   # Workspace configuration
   defaultWorkspaceProvider: s3
   maxWorkspaceQuota: 1099511627776  # 1TB in bytes
-  supportedProviders: ["s3", "gcs", "azure"]
+  supportedProviders: ["s3"]
 
 # KeyCloak configuration
 keycloak:

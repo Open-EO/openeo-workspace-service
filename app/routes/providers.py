@@ -13,8 +13,8 @@ router = APIRouter()
 # Define supported providers
 WORKSPACE_PROVIDERS: Dict[str, Dict[str, Any]] = {
     "s3": {
-        "title": "Amazon S3",
-        "description": "Amazon S3 is a cloud storage service provided by Amazon Web Services. It provides storage containers which are called buckets.",
+        "title": "S3",
+        "description": "S3 is a cloud storage service. It provides storage containers which are called buckets.",
         "intents": ["create", "register"],
         "parameters": {
             "aws_access_key_id": {
@@ -28,42 +28,6 @@ WORKSPACE_PROVIDERS: Dict[str, Dict[str, Any]] = {
             "bucket_name": {
                 "type": "string",
                 "description": "Bucket name"
-            }
-        },
-        "links": []
-    },
-    "gcs": {
-        "title": "Google Cloud Storage",
-        "description": "Google Cloud Storage is a cloud storage service provided by Google Cloud. It provides storage containers which are called buckets.",
-        "intents": ["create", "register"],
-        "parameters": {
-            "project_id": {
-                "type": "string",
-                "description": "Google Cloud project ID"
-            },
-            "service_account_key": {
-                "type": "string",
-                "description": "Service account key (JSON format)"
-            },
-            "bucket_name": {
-                "type": "string",
-                "description": "Bucket name"
-            }
-        },
-        "links": []
-    },
-    "azure": {
-        "title": "Azure Blob Storage",
-        "description": "Azure Blob Storage is a cloud storage service provided by Microsoft Azure. It provides storage containers.",
-        "intents": ["create", "register"],
-        "parameters": {
-            "connection_string": {
-                "type": "string",
-                "description": "Azure storage connection string"
-            },
-            "container_name": {
-                "type": "string",
-                "description": "Container name"
             }
         },
         "links": []

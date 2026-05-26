@@ -31,8 +31,6 @@ def test_workspace_providers_no_auth(client):
     data = response.json()
     assert "providers" in data
     assert "s3" in data["providers"]
-    assert "gcs" in data["providers"]
-    assert "azure" in data["providers"]
 
 def test_workspace_providers_structure(client):
     """Test workspace providers structure"""

@@ -1,0 +1,16 @@
+#!/usr/bin/env groovy
+
+// This Jenkinsfile uses the internal VITO shared library
+
+@Library('lib')_
+
+containerImageBuildPipeline {
+  build_args           = [
+  ]
+  dockerfile           = 'Dockerfile'
+  docker_registry_prod = 'vito-docker.artifactory.vgt.vito.be'
+  image_name           = 'workspace-service-openeo'
+  image_tag            = { env -> "0.0.${env.BUILD_NUMBER}" }
+  promotion_job        = false
+  run_tests            = false
+}

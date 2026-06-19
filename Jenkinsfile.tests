@@ -1,0 +1,34 @@
+#!/usr/bin/env groovy
+
+/*
+    This Jenkinsfile is used to run tests with Python 3.11 using the VITO CI system.
+    No artifacts are built or published - this is for testing compatibility only.
+    This Jenkinsfile uses the internal "biggeo/jenkinslib.git" library.
+    Information about the pythonPipeline method can be found in pythonPipeline.groovy
+*/
+
+@Library('lib')_
+
+pythonPipeline {
+  package_name = 'openeo-workspace-service'
+  wipeout_workspace = true
+  hadoop = false
+  pre_test_script = 'pre_test.sh'
+  extra_env_variables = [
+          /* Set pytest `basetemp` inside Jenkins workspace. (Note: this is intentionally Jenkins specific, instead of a global pytest.ini thing.) */
+          "PYTEST_DEBUG_TEMPROOT=pytest-tmp",
+          "PYTHON_VERSION=3.11",
+  ]
+  python_version = ["3.11"]
+  docker_registry = 'vito-docker-private.artifactory.vgt.vito.be'
+  downstream_job = 'openEO/openeo-workspace-service-publish'
+  wheel_repo = ''
+  wheel_repo_dev = ''
+  test_module_name = 'openeogeotrellis'
+  upload_dev_wheels = false
+  build_wheel = false
+  pep440 = true
+  enable_caching = true
+  enable_uv = true
+  test_coverage = true
+}

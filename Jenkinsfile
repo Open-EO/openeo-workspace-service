@@ -12,5 +12,5 @@ containerImageBuildPipeline {
   image_name           = 'workspace-service-openeo'
   image_tag            = { env -> "0.0.${env.BUILD_NUMBER}" }
   promotion_job        = false
-  run_tests            = false
+  run_tests            = true
 }

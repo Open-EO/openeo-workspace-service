@@ -83,22 +83,22 @@ openeo-workspaces-api/
 - CORS, exception handling, health checks
 - Startup/shutdown event handlers
 
-**Routes** (`app/routes/`)
+**Routes** (`workspace_service/routes/`)
 - `providers.py`: List supported workspace providers (S3)
 - `workspaces.py`: Full CRUD operations for workspaces
 
-**Authentication** (`app/auth.py`)
+**Authentication** (`workspace_service/auth.py`)
 - KeyCloak integration for OAuth2/OIDC
 - JWT token validation with cryptographic signature verification
 - User scoping (each user can only access their own workspaces)
 
-**Database** (`app/db.py`)
+**Database** (`workspace_service/db.py`)
 - Elasticsearch client wrapper
 - Automatic index creation
 - User-scoped queries (user_id filtering)
 - Workspace metadata storage
 
-**Configuration** (`app/config.py`)
+**Configuration** (`workspace_service/config.py`)
 - Pydantic BaseSettings for environment variables
 - Supports `.env` file loading
 - Defaults for development, overrideable for production
@@ -262,7 +262,7 @@ make helm-install      # Deploy to Kubernetes
 
 | Directory | Purpose |
 |-----------|---------|
-| `app/` | Application package |
+| `workspace_service/` | Application package |
 | `chart/` | Kubernetes Helm chart |
 | `tests/` | Test suite |
 | `.` | Configuration and documentation |
@@ -289,8 +289,8 @@ make helm-install      # Deploy to Kubernetes
 
 ## Next Steps
 
-1. **Customize Workspace Providers**: Add workspace provider implementations in `app/routes/providers.py`
-2. **Extend API**: Add new endpoints in `app/routes/`
+1. **Customize Workspace Providers**: Add workspace provider implementations in `workspace_service/routes/providers.py`
+2. **Extend API**: Add new endpoints in `workspace_service/routes/`
 3. **Integrate Notification System**: Add async tasks with Celery
 4. **Add Metrics**: Integrate Prometheus for monitoring
 5. **Implement Quotas**: Add quota enforcement in workspace operations
@@ -314,4 +314,3 @@ Based on the [OpenEO API Specification](https://github.com/Open-EO/openeo-api)
 **Created**: May 11, 2026
 **Version**: 0.1.0
 **Status**: Production Ready
-

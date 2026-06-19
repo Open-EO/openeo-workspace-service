@@ -4,7 +4,7 @@ Elasticsearch database client and operations
 import logging
 from typing import Optional, List, Dict, Any
 from elasticsearch import Elasticsearch, BadRequestError
-from app.config import settings
+from workspace_service.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -223,4 +223,3 @@ async def close():
 def get_client() -> ElasticsearchClient:
     """Get database client"""
     return _client
-

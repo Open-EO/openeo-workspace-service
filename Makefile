@@ -34,13 +34,13 @@ test:
 	pytest tests/ -v
 
 lint:
-	flake8 app/ main.py
-	isort --check-only app/ main.py
-	black --check app/ main.py
+	flake8 workspace_service/ main.py
+	isort --check-only workspace_service/ main.py
+	black --check workspace_service/ main.py
 
 format:
-	isort app/ main.py
-	black app/ main.py
+	isort workspace_service/ main.py
+	black workspace_service/ main.py
 
 build:
 	python setup.py build
@@ -78,4 +78,3 @@ clean:
 	find . -type d -name '.tox' -delete
 	find . -type d -name 'htmlcov' -delete
 	rm -rf build/ dist/ *.egg-info/
-

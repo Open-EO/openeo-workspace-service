@@ -231,7 +231,7 @@ curl https://openeo.example/api/v1/workspaces \
 
 ```
 .
-├── app/
+├── workspace_service/
 │   ├── __init__.py
 │   ├── config.py              # Configuration settings
 │   ├── auth.py                # KeyCloak authentication
@@ -265,15 +265,15 @@ pytest tests/
 
 ```bash
 pip install black isort
-black app/ main.py
-isort app/ main.py
+black workspace_service/ main.py
+isort workspace_service/ main.py
 ```
 
 ### Linting
 
 ```bash
 pip install flake8
-flake8 app/ main.py
+flake8 workspace_service/ main.py
 ```
 
 ## Troubleshooting
@@ -320,4 +320,3 @@ Apache License 2.0 - See LICENSE file for details
 - [FastAPI Documentation](https://fastapi.tiangolo.com)
 - [Elasticsearch Documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
 - [KeyCloak Documentation](https://www.keycloak.org/documentation)
-

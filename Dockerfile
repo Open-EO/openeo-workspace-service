@@ -27,7 +27,7 @@ COPY --from=builder /root/.local /root/.local
 
 # Copy application code
 COPY main.py .
-COPY app/ ./app/
+COPY workspace_service/ ./workspace_service/
 
 # Set PATH
 ENV PATH=/root/.local/bin:$PATH
@@ -42,4 +42,3 @@ EXPOSE 8000
 
 # Run application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-

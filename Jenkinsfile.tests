@@ -24,7 +24,7 @@ pythonPipeline {
   downstream_job = 'openEO/openeo-workspace-service-publish'
   wheel_repo = ''
   wheel_repo_dev = ''
-  test_module_name = 'openeogeotrellis'
+  test_module_name = 'workspace_service'
   upload_dev_wheels = false
   build_wheel = false
   pep440 = true

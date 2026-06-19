@@ -13,7 +13,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
-from app.config import settings
+from workspace_service.config import settings
 
 logger = logging.getLogger(__name__)
 security = HTTPBearer()
@@ -203,4 +203,3 @@ async def verify_token_optional(
         return None
     token = credentials.credentials
     return await keycloak_manager.verify_token(token)
-

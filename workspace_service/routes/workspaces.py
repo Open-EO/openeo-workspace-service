@@ -4,15 +4,15 @@ Workspaces CRUD routes
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from typing import Optional
-from app.models import (
+from workspace_service.models import (
     WorkspacesListResponse,
     Workspace,
     CreateWorkspaceRequest,
     RegisterWorkspaceRequest,
     UpdateWorkspaceRequest
 )
-from app.auth import TokenData, verify_token
-from app import db
+from workspace_service.auth import TokenData, verify_token
+from workspace_service import db
 import uuid
 from datetime import datetime
 
@@ -228,4 +228,3 @@ async def delete_workspace(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete workspace"
         )
-

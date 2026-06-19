@@ -6,9 +6,9 @@ from contextlib import asynccontextmanager
 import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
-from app.config import settings
-from app.routes import workspaces, providers
-from app import db
+from workspace_service.config import settings
+from workspace_service.routes import workspaces, providers
+from workspace_service import db
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -87,4 +87,3 @@ if __name__ == "__main__":
         port=8000,
         reload=settings.debug
     )
-

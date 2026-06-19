@@ -57,7 +57,7 @@ make test
 pytest tests/test_file.py::test_function
 
 # Run with coverage
-pytest tests/ --cov=app
+pytest tests/ --cov=workspace_service
 ```
 
 ### Documentation
@@ -117,29 +117,29 @@ feat: Add workspace tagging support
 
 ### New Endpoints
 
-1. **Define Pydantic model** in `app/models.py`
-2. **Implement route handler** in appropriate `app/routes/` file
+1. **Define Pydantic model** in `workspace_service/models.py`
+2. **Implement route handler** in appropriate `workspace_service/routes/` file
 3. **Add tests** in `tests/`
 4. **Update OpenAPI spec** if needed
 5. **Update README** with endpoint documentation
 
 ### New Workspace Provider
 
-1. **Add provider config** to `app/routes/providers.py`
+1. **Add provider config** to `workspace_service/routes/providers.py`
 2. **Define required parameters**
 3. **Update workspace models** if provider needs new fields
 4. **Add provider-specific tests**
 
 ### Database Changes
 
-1. **Update Elasticsearch mapping** in `app/db.py`
+1. **Update Elasticsearch mapping** in `workspace_service/db.py`
 2. **Add migration if breaking change**
 3. **Update models** to reflect schema
 
 ## Architecture
 
 ```
-app/
+workspace_service/
 ├── config.py        # Configuration
 ├── auth.py          # Authentication
 ├── db.py            # Database layer
@@ -208,4 +208,3 @@ By contributing, you agree that your contributions will be licensed under the Ap
 - [FastAPI Docs](https://fastapi.tiangolo.com)
 - [Elasticsearch Guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
 - [Kubernetes Docs](https://kubernetes.io/docs/)
-

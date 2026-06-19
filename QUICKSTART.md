@@ -146,9 +146,9 @@ docker-compose restart elasticsearch
 | File | Purpose |
 |------|---------|
 | `main.py` | FastAPI application entry point |
-| `app/routes/` | API endpoint implementations |
-| `app/db.py` | Elasticsearch database layer |
-| `app/auth.py` | KeyCloak authentication |
+| `workspace_service/routes/` | API endpoint implementations |
+| `workspace_service/db.py` | Elasticsearch database layer |
+| `workspace_service/auth.py` | KeyCloak authentication |
 | `requirements.txt` | Python dependencies |
 | `Dockerfile` | Container image definition |
 | `chart/` | Kubernetes Helm chart |
@@ -180,4 +180,3 @@ docker-compose restart elasticsearch
 - **Deployment Guide**: [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 Happy coding! 🚀
-

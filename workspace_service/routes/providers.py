@@ -4,8 +4,8 @@ Workspace provider routes
 import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Dict, Any
-from app.models import WorkspaceProvidersResponse, WorkspaceProvider
-from app.auth import TokenData, verify_token_optional
+from workspace_service.models import WorkspaceProvidersResponse, WorkspaceProvider
+from workspace_service.auth import TokenData, verify_token_optional
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -50,4 +50,3 @@ async def list_workspace_providers(
         providers[provider_name] = WorkspaceProvider(**provider_config)
 
     return WorkspaceProvidersResponse(providers=providers)
-

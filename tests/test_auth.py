@@ -10,9 +10,9 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-import app.auth as auth_module
-import app.db as db_module
-from app.auth import KeyCloakManager, TokenData
+import workspace_service.auth as auth_module
+import workspace_service.db as db_module
+from workspace_service.auth import KeyCloakManager, TokenData
 from main import app
 
 
@@ -227,5 +227,3 @@ async def test_keycloak_jwks_key_rotation_refresh(monkeypatch):
 
     assert token_data.sub == "rotated-user"
     assert call_counts["jwks"] >= 2
-
-

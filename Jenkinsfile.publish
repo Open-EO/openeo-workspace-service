@@ -7,6 +7,8 @@
 containerImageBuildPipeline {
   build_args           = [
   ]
+  custom_build_args    = [
+  ]
   dockerfile           = 'Dockerfile'
   docker_registry_prod = 'vito-docker.artifactory.vgt.vito.be'
   image_name           = 'workspace-service-openeo'

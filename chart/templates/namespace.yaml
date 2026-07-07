@@ -1,21 +1,15 @@
+{{- if .Values.networkPolicy.enabled }}
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: openeo
-  labels:
-    name: openeo
-
----
-kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
-  name: openeo-workspaces-network-policy
-  namespace: openeo
+  name: {{ include "openeo-workspaces-api.fullname" . }}
+  labels:
+    {{- include "openeo-workspaces-api.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: openeo-workspaces-api
+      {{- include "openeo-workspaces-api.selectorLabels" . | nindent 6 }}
   policyTypes:
     - Ingress
     - Egress
@@ -66,16 +60,20 @@ spec:
       ports:
         - protocol: TCP
           port: 443
+{{- end }}
 
+{{- if .Values.podDisruptionBudget.enabled }}
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: openeo-workspaces-pdb
-  namespace: openeo
+  name: {{ include "openeo-workspaces-api.fullname" . }}
+  labels:
+    {{- include "openeo-workspaces-api.labels" . | nindent 4 }}
 spec:
-  minAvailable: 1
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: openeo-workspaces-api
+      {{- include "openeo-workspaces-api.selectorLabels" . | nindent 6 }}
+{{- end }}
 

@@ -21,6 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 import git
 from workspace_service.config import settings
 

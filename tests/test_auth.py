@@ -53,9 +53,9 @@ async def _reject_token(_: str) -> TokenData:
 def test_protected_endpoint_requires_bearer_token(client):
     response = client.get("/api/v1/workspaces")
 
-    assert response.status_code == 403
+    assert response.status_code == 401
     body = response.json()
-    assert body["code"] == "403"
+    assert body["code"] == "401"
     assert body["message"] == "Not authenticated"
 
 

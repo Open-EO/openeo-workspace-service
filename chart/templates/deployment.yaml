@@ -48,11 +48,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "openeo-workspaces-api.fullname" . }}-secrets
                   key: oidc_client_secret
-            - name: ELASTICSEARCH_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "openeo-workspaces-api.fullname" . }}-secrets
-                  key: elasticsearch_password
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

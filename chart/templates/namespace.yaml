@@ -29,14 +29,6 @@ spec:
         - protocol: TCP
           port: 8000
   egress:
-    # Allow to Elasticsearch
-    - to:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: elasticsearch
-      ports:
-        - protocol: TCP
-          port: 9200
     # Allow DNS
     - to:
         - namespaceSelector: {}

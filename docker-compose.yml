@@ -1,20 +1,6 @@
 version: "3.8"
 
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
-    environment:
-      discovery.type: single-node
-      xpack.security.enabled: "false"
-      xpack.security.enrollment.enabled: "false"
-      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
-    ports:
-      - "9200:9200"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    networks:
-      - openeo-network
-
   openeo-workspaces-api:
     build:
       context: .
@@ -23,17 +9,14 @@ services:
       DEBUG: "true"
       OIDC_ISSUER_URL: http://oidc-provider:8080/realms/master
       OIDC_CLIENT_ID: openeo-workspaces
-      ELASTICSEARCH_HOST: elasticsearch
-      ELASTICSEARCH_PORT: 9200
-      ELASTICSEARCH_SCHEME: http
+      GIT_REPO_PATH: /app/data
     ports:
       - "8000:8000"
-    depends_on:
-      - elasticsearch
     networks:
       - openeo-network
     volumes:
       - .:/app
+      - workspace_data:/app/data
     command: >
       bash -c "pip install -e . && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 
@@ -42,5 +25,5 @@ networks:
     driver: bridge
 
 volumes:
-  elasticsearch_data:
+  workspace_data:
 

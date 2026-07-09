@@ -18,9 +18,6 @@ home: https://github.com/Open-EO/openeo-api
 sources:
   - https://github.com/Open-EO/openeo-api
 
-dependencies:
-  - name: elasticsearch
-    version: "8.5.1"
-    repository: "https://helm.elastic.co"
-    condition: elasticsearch.enabled
+dependencies: []
+
 

@@ -115,31 +115,16 @@ oidc:
   verifyTls: true
   verifyAudience: true
 
-# Elasticsearch configuration
-elasticsearch:
-  enabled: true
-  replicas: 1
-  minimumMasterNodes: 1
-  resources:
-    requests:
-      memory: "512Mi"
-      cpu: "250m"
-    limits:
-      memory: "1Gi"
-      cpu: "500m"
+# Git workspace store
+git:
+  repoPath: /app/data
+  remoteUrl: ""
+  authorName: "Workspace Service"
+  authorEmail: "workspace-service@openeo"
 
-  # External Elasticsearch (if not using the chart dependency)
-  external:
-    enabled: false
-    host: elasticsearch.example.com
-    port: 9200
-    scheme: https
-    username: elastic
-    password: ""
-
-# Persistent storage
+# Persistent storage (used for the git repo)
 persistence:
-  enabled: false
+  enabled: true
   storageClass: "standard"
   size: 10Gi
   mountPath: /app/data
@@ -154,7 +139,6 @@ env:
 # Secrets (these will be filled in via CI/CD or secret management)
 secrets:
   oidcClientSecret: ""
-  elasticsearchPassword: ""
 
 # Network Policy
 networkPolicy:

@@ -16,14 +16,8 @@ data:
   OIDC_VERIFY_TLS: "{{ .Values.oidc.verifyTls }}"
   OIDC_VERIFY_AUDIENCE: "{{ .Values.oidc.verifyAudience }}"
 
-  {{- if .Values.elasticsearch.external.enabled }}
-  ELASTICSEARCH_HOST: "{{ .Values.elasticsearch.external.host }}"
-  ELASTICSEARCH_PORT: "{{ .Values.elasticsearch.external.port }}"
-  ELASTICSEARCH_SCHEME: "{{ .Values.elasticsearch.external.scheme }}"
-  ELASTICSEARCH_USER: "{{ .Values.elasticsearch.external.username }}"
-  {{- else if .Values.elasticsearch.enabled }}
-  ELASTICSEARCH_HOST: "{{ .Release.Name }}-elasticsearch-master"
-  ELASTICSEARCH_PORT: "9200"
-  ELASTICSEARCH_SCHEME: "http"
-  {{- end }}
+  GIT_REPO_PATH: "{{ .Values.git.repoPath }}"
+  GIT_REMOTE_URL: "{{ .Values.git.remoteUrl }}"
+  GIT_AUTHOR_NAME: "{{ .Values.git.authorName }}"
+  GIT_AUTHOR_EMAIL: "{{ .Values.git.authorEmail }}"
 

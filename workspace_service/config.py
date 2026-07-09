@@ -22,13 +22,11 @@ class Settings(BaseSettings):
     oidc_jwks_cache_ttl_seconds: int = 300
     jwt_algorithm: str = "RS256"
 
-    # Elasticsearch
-    elasticsearch_host: str = "localhost"
-    elasticsearch_port: int = 9200
-    elasticsearch_user: Optional[str] = None
-    elasticsearch_password: Optional[str] = None
-    elasticsearch_scheme: str = "https"
-    elasticsearch_index_prefix: str = "openeo-workspaces"
+    # Git workspace store
+    git_repo_path: str = "./data"
+    git_remote_url: Optional[str] = None
+    git_author_name: str = "Workspace Service"
+    git_author_email: str = "workspace-service@openeo"
 
     # Workspace configuration
     default_workspace_provider: str = "s3"

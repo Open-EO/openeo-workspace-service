@@ -107,24 +107,13 @@ config:
   maxWorkspaceQuota: 1099511627776  # 1TB in bytes
   supportedProviders: ["s3"]
 
-# KeyCloak configuration
-keycloak:
-  enabled: true
-  auth:
-    adminUser: admin
-    adminPassword: admin
-  realm: openeo
-  client:
-    id: openeo-workspaces
-    secret: secret
-
-  # External KeyCloak (if not using the chart dependency)
-  external:
-    enabled: false
-    serverUrl: https://keycloak.example.com
-    realm: openeo
-    clientId: openeo-workspaces
-    clientSecret: ""
+# OIDC configuration
+oidc:
+  issuerUrl: https://oidc.example.com/realms/openeo
+  clientId: openeo-workspaces
+  clientSecret: ""
+  verifyTls: true
+  verifyAudience: true
 
 # Elasticsearch configuration
 elasticsearch:
@@ -164,7 +153,7 @@ env:
 
 # Secrets (these will be filled in via CI/CD or secret management)
 secrets:
-  keycloakClientSecret: ""
+  oidcClientSecret: ""
   elasticsearchPassword: ""
 
 # Network Policy

@@ -11,15 +11,10 @@ data:
   MAX_WORKSPACE_QUOTA: "{{ .Values.config.maxWorkspaceQuota }}"
   SUPPORTED_PROVIDERS: "{{ join "," .Values.config.supportedProviders }}"
 
-  {{- if .Values.keycloak.external.enabled }}
-  KEYCLOAK_SERVER_URL: "{{ .Values.keycloak.external.serverUrl }}"
-  KEYCLOAK_REALM: "{{ .Values.keycloak.external.realm }}"
-  KEYCLOAK_CLIENT_ID: "{{ .Values.keycloak.external.clientId }}"
-  {{- else if .Values.keycloak.enabled }}
-  KEYCLOAK_SERVER_URL: "http://{{ .Release.Name }}-keycloak:8080"
-  KEYCLOAK_REALM: "{{ .Values.keycloak.realm }}"
-  KEYCLOAK_CLIENT_ID: "{{ .Values.keycloak.client.id }}"
-  {{- end }}
+  OIDC_ISSUER_URL: "{{ .Values.oidc.issuerUrl }}"
+  OIDC_CLIENT_ID: "{{ .Values.oidc.clientId }}"
+  OIDC_VERIFY_TLS: "{{ .Values.oidc.verifyTls }}"
+  OIDC_VERIFY_AUDIENCE: "{{ .Values.oidc.verifyAudience }}"
 
   {{- if .Values.elasticsearch.external.enabled }}
   ELASTICSEARCH_HOST: "{{ .Values.elasticsearch.external.host }}"

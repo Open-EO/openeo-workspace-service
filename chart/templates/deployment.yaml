@@ -43,11 +43,11 @@ spec:
             - configMapRef:
                 name: {{ include "openeo-workspaces-api.fullname" . }}-config
           env:
-            - name: KEYCLOAK_CLIENT_SECRET
+            - name: OIDC_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ include "openeo-workspaces-api.fullname" . }}-secrets
-                  key: keycloak_client_secret
+                  key: oidc_client_secret
             - name: ELASTICSEARCH_PASSWORD
               valueFrom:
                 secretKeyRef:

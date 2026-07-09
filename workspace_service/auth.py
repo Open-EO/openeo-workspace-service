@@ -1,5 +1,5 @@
 """
-Authentication and authorization using KeyCloak
+Authentication and authorization using OIDC JWT verification
 """
 import asyncio
 import json
@@ -30,29 +30,25 @@ class TokenData(BaseModel):
     preferred_username: Optional[str] = None
     email: Optional[str] = None
 
-class KeyCloakManager:
-    """Manage KeyCloak authentication and token verification"""
+class OIDCAuthManager:
+    """Manage OIDC authentication and JWT token verification"""
 
     def __init__(self):
-        self.server_url = settings.keycloak_server_url.rstrip("/")
-        self.realm = settings.keycloak_realm
-        self.client_id = settings.keycloak_client_id
-        self.verify_tls = settings.keycloak_verify_tls
+        self.issuer = settings.oidc_issuer_url.rstrip("/")
+        self.client_id = settings.oidc_client_id
+        self.verify_tls = settings.oidc_verify_tls
 
-        default_issuer = f"{self.server_url}/realms/{self.realm}"
-        self.issuer = (settings.keycloak_issuer or default_issuer).rstrip("/")
-        self.discovery_url = (
-            f"{self.server_url}/realms/{self.realm}/.well-known/openid-configuration"
-        )
-        self.jwks_url = f"{self.issuer}/protocol/openid-connect/certs"
+        self.discovery_url = f"{self.issuer}/.well-known/openid-configuration"
+        # Fallback JWKS URL; overridden by OIDC discovery when available.
+        self.jwks_url = f"{self.issuer}/.well-known/jwks.json"
 
-        self.jwks_cache_ttl_seconds = settings.keycloak_jwks_cache_ttl_seconds
+        self.jwks_cache_ttl_seconds = settings.oidc_jwks_cache_ttl_seconds
         self._jwks_cache = None
         self._jwks_cache_expires_at = 0.0
         self._jwks_lock = asyncio.Lock()
 
     async def _discover_oidc_configuration(self) -> None:
-        """Load issuer/JWKS URI from Keycloak's OIDC discovery endpoint."""
+        """Load issuer/JWKS URI from the OIDC discovery endpoint."""
         try:
             async with httpx.AsyncClient(timeout=10.0, verify=self.verify_tls) as client:
                 response = await client.get(self.discovery_url)
@@ -70,7 +66,7 @@ class KeyCloakManager:
             logger.warning("Failed OIDC discovery at %s: %s", self.discovery_url, exc)
 
     async def get_jwks(self):
-        """Fetch JWKS from KeyCloak"""
+        """Fetch JWKS from the OIDC provider"""
         now = time.time()
         if self._jwks_cache is not None and now < self._jwks_cache_expires_at:
             return self._jwks_cache
@@ -132,7 +128,7 @@ class KeyCloakManager:
 
     @staticmethod
     def _matches_client(audience_claim, client_id: str) -> bool:
-        """Validate a Keycloak audience claim against the configured client id."""
+        """Validate an OIDC audience claim against the configured client id."""
         if audience_claim is None:
             return False
         if isinstance(audience_claim, str):
@@ -142,7 +138,7 @@ class KeyCloakManager:
         return False
 
     async def verify_token(self, token: str) -> TokenData:
-        """Verify JWT token from KeyCloak"""
+        """Verify JWT token from the OIDC provider"""
         try:
             key = await self._get_signing_key(token)
             payload = jwt.decode(
@@ -153,7 +149,7 @@ class KeyCloakManager:
                 options={"verify_aud": False},
             )
 
-            if settings.keycloak_verify_audience:
+            if settings.oidc_verify_audience:
                 aud = payload.get("aud")
                 azp = payload.get("azp")
                 if not (
@@ -187,13 +183,13 @@ class KeyCloakManager:
                 detail="Invalid token",
             )
 
-# Initialize KeyCloak manager
-keycloak_manager = KeyCloakManager()
+# Initialize OIDC auth manager
+oidc_auth_manager = OIDCAuthManager()
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> TokenData:
     """FastAPI dependency to verify JWT token"""
     token = credentials.credentials
-    return await keycloak_manager.verify_token(token)
+    return await oidc_auth_manager.verify_token(token)
 
 async def verify_token_optional(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security)
@@ -202,4 +198,4 @@ async def verify_token_optional(
     if credentials is None:
         return None
     token = credentials.credentials
-    return await keycloak_manager.verify_token(token)
+    return await oidc_auth_manager.verify_token(token)

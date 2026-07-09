@@ -1,4 +1,4 @@
-"""Authentication tests for Keycloak-protected endpoints."""
+"""Authentication tests for OIDC-protected endpoints."""
 
 import json
 import time
@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 import workspace_service.auth as auth_module
 import workspace_service.db as db_module
-from workspace_service.auth import KeyCloakManager, TokenData
+from workspace_service.auth import OIDCAuthManager, TokenData
 from main import app
 
 
@@ -60,7 +60,7 @@ def test_protected_endpoint_requires_bearer_token(client):
 
 
 def test_protected_endpoint_accepts_valid_token(client, monkeypatch):
-    monkeypatch.setattr(auth_module.keycloak_manager, "verify_token", _accept_token)
+    monkeypatch.setattr(auth_module.oidc_auth_manager, "verify_token", _accept_token)
     monkeypatch.setattr(db_module, "get_client", lambda: DummyWorkspaceClient())
 
     response = client.get(
@@ -75,7 +75,7 @@ def test_protected_endpoint_accepts_valid_token(client, monkeypatch):
 
 
 def test_optional_auth_rejects_invalid_token(client, monkeypatch):
-    monkeypatch.setattr(auth_module.keycloak_manager, "verify_token", _reject_token)
+    monkeypatch.setattr(auth_module.oidc_auth_manager, "verify_token", _reject_token)
     monkeypatch.setattr(db_module, "get_client", lambda: FailingWorkspaceClient())
 
     response = client.get(
@@ -90,9 +90,9 @@ def test_optional_auth_rejects_invalid_token(client, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_keycloak_oidc_discovery_and_jwks_validation(monkeypatch):
+async def test_oidc_discovery_and_jwks_validation(monkeypatch):
     """Verify a real RS256 token through discovery + JWKS without monkeypatching verifier logic."""
-    manager = KeyCloakManager()
+    manager = OIDCAuthManager()
 
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     public_key = private_key.public_key()
@@ -155,9 +155,9 @@ async def test_keycloak_oidc_discovery_and_jwks_validation(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_keycloak_jwks_key_rotation_refresh(monkeypatch):
+async def test_oidc_jwks_key_rotation_refresh(monkeypatch):
     """Verify verifier refreshes JWKS cache when token kid is missing due to key rotation."""
-    manager = KeyCloakManager()
+    manager = OIDCAuthManager()
 
     old_private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     old_public_key = old_private_key.public_key()

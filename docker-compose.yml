@@ -1,20 +1,6 @@
 version: "3.8"
 
 services:
-  keycloak:
-    image: quay.io/keycloak/keycloak:24.0
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HTTP_ENABLED: "true"
-      KC_PROXY: "edge"
-    ports:
-      - "8080:8080"
-    volumes:
-      - keycloak_data:/opt/keycloak/data
-    networks:
-      - openeo-network
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
     environment:
@@ -35,10 +21,8 @@ services:
       dockerfile: Dockerfile
     environment:
       DEBUG: "true"
-      KEYCLOAK_SERVER_URL: http://keycloak:8080
-      KEYCLOAK_REALM: master
-      KEYCLOAK_CLIENT_ID: openeo-workspaces
-      KEYCLOAK_CLIENT_SECRET: secret
+      OIDC_ISSUER_URL: http://oidc-provider:8080/realms/master
+      OIDC_CLIENT_ID: openeo-workspaces
       ELASTICSEARCH_HOST: elasticsearch
       ELASTICSEARCH_PORT: 9200
       ELASTICSEARCH_SCHEME: http
@@ -46,7 +30,6 @@ services:
       - "8000:8000"
     depends_on:
       - elasticsearch
-      - keycloak
     networks:
       - openeo-network
     volumes:
@@ -60,5 +43,4 @@ networks:
 
 volumes:
   elasticsearch_data:
-  keycloak_data:
 

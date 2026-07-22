@@ -6,8 +6,8 @@ replicaCount: 3
 
 # Image configuration
 image:
-  repository: openeo-workspaces-api
-  tag: "0.1.0"
+  repository: vito-docker.artifactory.vgt.vito.be/workspace-service-openeo
+  tag: "0.0.38"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []

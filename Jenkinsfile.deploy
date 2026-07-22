@@ -5,4 +5,5 @@
 helmchartPipeline{
   chart_path       = './chart'
   chart_repository = 'helm-public'
+  downstream_job = 'openEO/openeo-workspace-service-terraform-kubernetes-deploy-dev'
 }

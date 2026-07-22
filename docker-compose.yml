@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   openeo-workspaces-api:
     build:

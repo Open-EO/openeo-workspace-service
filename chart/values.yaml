@@ -125,7 +125,7 @@ git:
 # Persistent storage (used for the git repo)
 persistence:
   enabled: true
-  storageClass: "standard"
+  storageClass: "csi-cinder-sc-retain-ssd"
   size: 10Gi
   mountPath: /app/data
 

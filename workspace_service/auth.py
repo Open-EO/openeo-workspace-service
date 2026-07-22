@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from workspace_service.config import settings
 
 logger = logging.getLogger(__name__)
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 optional_security = HTTPBearer(auto_error=False)
 
 class TokenData(BaseModel):
@@ -188,6 +188,11 @@ oidc_auth_manager = OIDCAuthManager()
 
 async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)) -> TokenData:
     """FastAPI dependency to verify JWT token"""
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
     token = credentials.credentials
     return await oidc_auth_manager.verify_token(token)
 

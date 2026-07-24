@@ -122,12 +122,6 @@ git:
   authorName: "Workspace Service"
   authorEmail: "workspace-service@openeo"
 
-# Persistent storage (used for the git repo)
-persistence:
-  enabled: true
-  storageClass: "csi-cinder-sc-retain-ssd"
-  size: 10Gi
-  mountPath: /app/data
 
 # Environment variables
 env:

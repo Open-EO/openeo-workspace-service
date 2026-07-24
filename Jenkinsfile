@@ -21,7 +21,7 @@ pythonPipeline {
   ]
   python_version = ["3.11"]
   docker_registry = 'vito-docker-private.artifactory.vgt.vito.be'
-  downstream_job = 'openEO/openeo-workspace-service-publish'
+  downstream_job = 'openEO/openeo-workspace-service-docker'
   wheel_repo = ''
   wheel_repo_dev = ''
   test_module_name = 'workspace_service'

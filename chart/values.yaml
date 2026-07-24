@@ -6,7 +6,7 @@ replicaCount: 3
 
 # Image configuration
 image:
-  repository: vito-docker.artifactory.vgt.vito.be/workspace-service-openeo
+  repository: vito-docker.artifactory.vgt.vito.be/openeo-workspace-service
   tag: "latest"
   pullPolicy: Always
 

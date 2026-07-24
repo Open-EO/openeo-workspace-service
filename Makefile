@@ -46,7 +46,7 @@ build:
 	python setup.py build
 
 docker-build:
-	docker build -t openeo-workspaces-api:0.1.0 .
+	docker build -t openeo-workspace-service:0.1.0 .
 
 docker-up:
 	docker-compose up -d

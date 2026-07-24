@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     # Workspace configuration
     default_workspace_provider: str = "s3"
-    max_workspace_quota: int = 1099511627776  # 1TB in bytes
+    max_workspace_quota_mb: int = 1000000  # 1TB in megabytes
 
     # Supported providers
     supported_providers: list = ["s3"]

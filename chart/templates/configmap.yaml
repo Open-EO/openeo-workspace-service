@@ -8,7 +8,7 @@ data:
   DEBUG: "{{ .Values.config.debug }}"
   API_VERSION: "{{ .Values.config.apiVersion }}"
   DEFAULT_WORKSPACE_PROVIDER: "{{ .Values.config.defaultWorkspaceProvider }}"
-  MAX_WORKSPACE_QUOTA: "{{ .Values.config.maxWorkspaceQuota }}"
+  MAX_WORKSPACE_QUOTA: "{{ .Values.config.maxWorkspaceQuotaMB }}"
   SUPPORTED_PROVIDERS: {{ toJson .Values.config.supportedProviders | quote }}
 
   OIDC_ISSUER_URL: "{{ .Values.oidc.issuerUrl }}"

@@ -7,8 +7,8 @@ replicaCount: 3
 # Image configuration
 image:
   repository: vito-docker.artifactory.vgt.vito.be/workspace-service-openeo
-  tag: "0.0.38"
-  pullPolicy: IfNotPresent
+  tag: "latest"
+  pullPolicy: Always
 
 imagePullSecrets: []
 nameOverride: ""

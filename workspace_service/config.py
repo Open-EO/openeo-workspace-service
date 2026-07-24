@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     # API
     debug: bool = False
     api_version: str = "v1"
-    api_prefix: str = "/api"
+    api_prefix: str = "/workspaces/api"
 
     # Security
     oidc_issuer_url: str = "http://localhost/realms/openeo"

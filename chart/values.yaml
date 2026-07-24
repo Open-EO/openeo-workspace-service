@@ -104,7 +104,7 @@ config:
 
   # Workspace configuration
   defaultWorkspaceProvider: s3
-  maxWorkspaceQuota: 1099511627776  # 1TB in bytes
+  maxWorkspaceQuotaMB: 1000000  # 1TB in megabytes
   supportedProviders: ["s3"]
 
 # OIDC configuration

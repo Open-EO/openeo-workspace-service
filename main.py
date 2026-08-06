@@ -14,6 +14,8 @@ from workspace_service import db
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+route_prefix = f"{settings.api_prefix}/{settings.api_version}"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,9 +34,9 @@ app = FastAPI(
     title="openEO API - Workspaces Extension",
     version="0.1.0",
     description="The Workspace Extension to the openEO API provides an interface for connecting external file storage to openEO back-end implementations.",
-    openapi_url="/api/v1/openapi.json",
-    docs_url="/api/v1/docs",
-    redoc_url="/api/v1/redoc",
+    openapi_url=f"{route_prefix}/openapi.json",
+    docs_url=f"{route_prefix}/docs",
+    redoc_url=f"{route_prefix}/redoc",
     lifespan=lifespan,
 )
 
@@ -47,18 +49,18 @@ async def health():
 # Include routers
 app.include_router(
     providers.router,
-    prefix="/api/v1",
+    prefix=route_prefix,
     tags=["Workspaces"]
 )
 
 app.include_router(
     workspaces.router,
-    prefix="/api/v1",
+    prefix=route_prefix,
     tags=["Workspaces"]
 )
 
 # Root endpoint
-@app.get("/api/v1", tags=["API Info"])
+@app.get(route_prefix, tags=["API Info"])
 async def api_info():
     """Return API version and basic information"""
     return {

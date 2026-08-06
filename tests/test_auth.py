@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 import workspace_service.auth as auth_module
 import workspace_service.db as db_module
 from workspace_service.auth import OIDCAuthManager, TokenData
-from main import app
+from main import app, route_prefix
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ async def _reject_token(_: str) -> TokenData:
 
 
 def test_protected_endpoint_requires_bearer_token(client):
-    response = client.get("/api/v1/workspaces")
+    response = client.get(f"{route_prefix}/workspaces")
 
     assert response.status_code == 401
     body = response.json()
@@ -64,7 +64,7 @@ def test_protected_endpoint_accepts_valid_token(client, monkeypatch):
     monkeypatch.setattr(db_module, "get_client", lambda: DummyWorkspaceClient())
 
     response = client.get(
-        "/api/v1/workspaces",
+        f"{route_prefix}/workspaces",
         headers={"Authorization": "Bearer valid-token"},
     )
 
@@ -79,7 +79,7 @@ def test_optional_auth_rejects_invalid_token(client, monkeypatch):
     monkeypatch.setattr(db_module, "get_client", lambda: FailingWorkspaceClient())
 
     response = client.get(
-        "/api/v1/workspace_providers",
+        f"{route_prefix}/workspace_providers",
         headers={"Authorization": "Bearer invalid-token"},
     )
 

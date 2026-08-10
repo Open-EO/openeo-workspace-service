@@ -178,6 +178,21 @@ curl https://openeo.example/api/v1/workspaces \
   -H "Authorization: Bearer {token}"
 ```
 
+### Python Client
+
+The repository includes a Python client in `workspace_service_client`:
+
+```python
+from workspace_service_client import WorkspaceServiceClient
+
+with WorkspaceServiceClient(
+    base_url="https://openeo.example",
+    token="<bearer-token>",
+) as client:
+    providers = client.list_workspace_providers()
+    workspaces = client.list_workspaces(limit=100)
+```
+
 ### Get Workspace Details
 
 ```bash

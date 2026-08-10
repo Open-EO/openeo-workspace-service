@@ -1,4 +1,3 @@
 """
 OpenEO Workspaces API package
 """
-

@@ -125,7 +125,7 @@ class GitWorkspaceClient:
             "type": data.get("type"),
             "status": "provisioning",
             "details": "Workspace is being provisioned",
-            "quota": data.get("quota", settings.max_workspace_quota),
+            "quota": data.get("quota", settings.max_workspace_quota_mb),
             "parameters": data.get("parameters", {}),
             "created_at": now,
             "updated_at": now,

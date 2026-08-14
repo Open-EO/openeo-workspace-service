@@ -1,9 +1,15 @@
 """
 Tests for OpenEO Workspaces API
 """
+import dirty_equals
+import mock
 import pytest
 from fastapi.testclient import TestClient
+from mock.mock import AsyncMock
+
 from main import app, route_prefix
+from workspace_service.auth import TokenData
+
 
 @pytest.fixture
 def client():
@@ -46,6 +52,49 @@ def test_workspace_providers_structure(client):
         assert len(provider_config["intents"]) > 0
         assert set(provider_config["intents"]).issubset({"create", "register"})
 
-# Note: Protected endpoints require bearer token testing
-# This would require mocking KeyCloak authentication
 
+def test_list_workspaces(client):
+    with mock.patch("workspace_service.auth.oidc_auth_manager.verify_token",
+                    return_value=TokenData(sub="", iat=0, exp=0, iss="")):
+        response = client.get(f"{route_prefix}/workspaces", headers={"Authorization": f"Bearer ..."})
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "workspaces" in data
+    assert data["workspaces"] == []
+
+
+def test_create_workspace(client):
+    token_data = TokenData(sub="johndoe", iat=0, exp=0, iss="")
+
+    with (
+        mock.patch("workspace_service.auth.oidc_auth_manager.verify_token", return_value=token_data),
+        mock.patch("workspace_service.db.get_client", return_value=AsyncMock()) as get_db_client_mock
+    ):
+        db_client_mock = get_db_client_mock.return_value
+
+        response = client.post(f"{route_prefix}/workspaces",
+                               json={"title": "t", "description": "d", "parameters": {"bucket_name": "b"}, "quota": 42},
+                               headers={"Authorization": f"Bearer ..."})
+
+        db_client_mock.create_workspace.assert_called_once_with(
+            dirty_equals.IsUUID(),
+            "johndoe",
+            {
+                "title": "t",
+                "description": "d",
+                "type": "s3",
+                "parameters": {"bucket_name": "b"},
+                "quota": 42,
+            }
+        )
+
+    assert response.status_code == 201, response.json()
+
+    assert response.json() == {
+        "id": dirty_equals.IsUUID(),
+        "status": "provisioning",
+        "message": "Workspace creation has been queued successfully"
+    }

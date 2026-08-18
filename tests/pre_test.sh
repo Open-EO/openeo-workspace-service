@@ -5,4 +5,7 @@
 set -eux
 pwd
 
-# do nothing (for now) but this file must be present for the Jenkins CI toolchain to work
+# Root folder for temp folders during tests (e.g. through `tmp_path` fixture).
+# Assigned to `PYTEST_DEBUG_TEMPROOT` from Jenkinsfile.
+mkdir -p pytest-tmp
+chown jenkins pytest-tmp

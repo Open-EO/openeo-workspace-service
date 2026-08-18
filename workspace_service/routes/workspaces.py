@@ -66,7 +66,6 @@ async def list_workspaces(
 async def create_workspace(
     request: CreateWorkspaceRequest | RegisterWorkspaceRequest,
     token: TokenData = Depends(verify_token),
-    response_headers: dict = None
 ):
     """
     Creates a new workspace.

@@ -28,7 +28,7 @@ pythonPipeline {
   upload_dev_wheels = false
   build_wheel = false
   pep440 = true
-  custom_test_image = 'python:3.11'
+  venv_rpm_deps = ['git'] /* ideally this is already in the test image */
   enable_caching = true
   enable_uv = true
   test_coverage = true

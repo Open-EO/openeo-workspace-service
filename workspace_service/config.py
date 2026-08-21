@@ -1,6 +1,7 @@
 """
 Configuration settings for the OpenEO Workspaces API
 """
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
@@ -34,6 +35,11 @@ class Settings(BaseSettings):
 
     # Supported providers
     supported_providers: list = ["s3"]
+
+    def model_post_init(self, __context):
+        """Expand environment variables in git_remote_url after initialization."""
+        if self.git_remote_url:
+            self.git_remote_url = os.path.expandvars(self.git_remote_url)
 
 
 settings = Settings()

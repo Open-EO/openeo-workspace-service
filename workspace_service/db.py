@@ -46,9 +46,11 @@ class GitWorkspaceClient:
         self.repo_path.mkdir(parents=True, exist_ok=True)
         
         try:
+            logger.info("Trying to open existing git repository")
             self._repo = git.Repo(self.repo_path)
             logger.info("Opened existing git repository at %s", self.repo_path)
         except git.InvalidGitRepositoryError:
+            logger.info("No existing git repository found, initializing new repository")
             self._initialize_new_repo()
         except Exception as exc:
             logger.warning("Failed to open existing repository (%s), reinitializing: %s", self.repo_path, exc)
@@ -65,6 +67,7 @@ class GitWorkspaceClient:
         """Initialize a new git repository, optionally from remote."""
         if self.remote_url:
             try:
+                logger.info("Trying to clone remote repository")
                 self._repo = git.Repo.clone_from(self.remote_url, self.repo_path)
                 logger.info("Cloned remote repository from %s", self.remote_url)
                 return

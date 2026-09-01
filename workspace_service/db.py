@@ -125,7 +125,8 @@ class GitWorkspaceClient:
         """Attempt to push; if rejected due to non-fast-forward, rebase and retry."""
         for attempt in range(max_retries):
             try:
-                self._repo.remotes.origin.push()
+                branch_name = self._repo.active_branch.name
+                self._repo.git.push("origin", f"HEAD:refs/heads/{branch_name}")
                 logger.info("Successfully pushed to remote")
                 return
             except Exception as exc:
@@ -262,4 +263,3 @@ async def close():
 def get_client() -> GitWorkspaceClient:
     """Return the active workspace client."""
     return _client
-

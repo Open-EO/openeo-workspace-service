@@ -29,7 +29,7 @@ spec:
         - protocol: TCP
           port: 8000
   egress:
-    # Allow DNS
+    # Allow DNS to cluster resolver
     - to:
         - namespaceSelector: {}
           podSelector:
@@ -38,9 +38,12 @@ spec:
       ports:
         - protocol: UDP
           port: 53
+        - protocol: TCP
+          port: 53
     # Allow HTTPS to external services
     - to:
-        - namespaceSelector: {}
+        - ipBlock:
+            cidr: 0.0.0.0/0
       ports:
         - protocol: TCP
           port: 443
@@ -60,4 +63,3 @@ spec:
     matchLabels:
       {{- include "openeo-workspaces-api.selectorLabels" . | nindent 6 }}
 {{- end }}
-

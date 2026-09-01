@@ -104,10 +104,34 @@ class GitWorkspaceClient:
         )
 
         if self.remote_url:
+            self._push_with_retry()
+
+    def _push_with_retry(self, max_retries: int = 3):
+        """Attempt to push; if rejected due to non-fast-forward, rebase and retry."""
+        for attempt in range(max_retries):
             try:
                 self._repo.remotes.origin.push()
+                logger.info("Successfully pushed to remote")
+                return
             except Exception as exc:
-                logger.warning("Failed to push to remote: %s", exc)
+                exc_str = str(exc)
+                if "non-fast-forward" in exc_str or "rejected" in exc_str:
+                    if attempt < max_retries - 1:
+                        try:
+                            logger.info("Push rejected (non-fast-forward), pulling and rebasing...")
+                            self._repo.remotes.origin.pull(rebase=True)
+                            logger.info("Rebase successful, retrying push...")
+                            continue
+                        except Exception as pull_exc:
+                            logger.warning("Rebase failed: %s", pull_exc)
+                            logger.warning("Failed to push to remote after rebase attempt: %s", exc)
+                            return
+                    else:
+                        logger.warning("Failed to push after %d retry attempts: %s", max_retries, exc)
+                        return
+                else:
+                    logger.warning("Failed to push to remote: %s", exc)
+                    return
 
     # ------------------------------------------------------------------
     # CRUD

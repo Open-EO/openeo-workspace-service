@@ -49,19 +49,10 @@ class GitWorkspaceClient:
             self._repo = git.Repo(self.repo_path)
             logger.info("Opened existing git repository at %s", self.repo_path)
         except git.InvalidGitRepositoryError:
-            if self.remote_url:
-                try:
-                    self._repo = git.Repo.clone_from(self.remote_url, self.repo_path)
-                    logger.info("Cloned remote repository from %s", self.remote_url)
-                except Exception as exc:
-                    logger.warning("Could not clone from remote (%s), initializing empty repo: %s", self.remote_url, exc)
-                    self._repo = git.Repo.init(self.repo_path)
-                    logger.info("Initialised new git repository at %s", self.repo_path)
-                    self._create_initial_commit()
-            else:
-                self._repo = git.Repo.init(self.repo_path)
-                logger.info("Initialised new git repository at %s", self.repo_path)
-                self._create_initial_commit()
+            self._initialize_new_repo()
+        except Exception as exc:
+            logger.warning("Failed to open existing repository (%s), reinitializing: %s", self.repo_path, exc)
+            self._initialize_new_repo()
 
         workspaces_dir = self.repo_path / "workspaces"
         workspaces_dir.mkdir(parents=True, exist_ok=True)
@@ -69,6 +60,20 @@ class GitWorkspaceClient:
         if self.remote_url and "origin" not in [r.name for r in self._repo.remotes]:
             self._repo.create_remote("origin", self.remote_url)
             logger.info("Added remote 'origin' → %s", self.remote_url)
+
+    def _initialize_new_repo(self):
+        """Initialize a new git repository, optionally from remote."""
+        if self.remote_url:
+            try:
+                self._repo = git.Repo.clone_from(self.remote_url, self.repo_path)
+                logger.info("Cloned remote repository from %s", self.remote_url)
+                return
+            except Exception as exc:
+                logger.warning("Could not clone from remote (%s), initializing empty repo: %s", self.remote_url, exc)
+        
+        self._repo = git.Repo.init(self.repo_path)
+        logger.info("Initialised new git repository at %s", self.repo_path)
+        self._create_initial_commit()
 
     def _create_initial_commit(self):
         """Create initial commit in a new repository."""

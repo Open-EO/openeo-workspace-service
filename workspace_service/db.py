@@ -44,34 +44,44 @@ class GitWorkspaceClient:
     async def initialize(self):
         """Ensure the git repository exists and is ready."""
         self.repo_path.mkdir(parents=True, exist_ok=True)
-        workspaces_dir = self.repo_path / "workspaces"
-        workspaces_dir.mkdir(exist_ok=True)
-
+        
         try:
             self._repo = git.Repo(self.repo_path)
             logger.info("Opened existing git repository at %s", self.repo_path)
         except git.InvalidGitRepositoryError:
-            self._repo = git.Repo.init(self.repo_path)
-            logger.info("Initialised new git repository at %s", self.repo_path)
-            # Initial commit so the repo has a valid HEAD
-            gitkeep = workspaces_dir / ".gitkeep"
-            gitkeep.touch()
-            self._repo.index.add([str(gitkeep.relative_to(self.repo_path))])
-            self._repo.index.commit(
-                "chore: initialise workspace repository",
-                author=self.author,
-                committer=self.author,
-            )
+            if self.remote_url:
+                try:
+                    self._repo = git.Repo.clone_from(self.remote_url, self.repo_path)
+                    logger.info("Cloned remote repository from %s", self.remote_url)
+                except Exception as exc:
+                    logger.warning("Could not clone from remote (%s), initializing empty repo: %s", self.remote_url, exc)
+                    self._repo = git.Repo.init(self.repo_path)
+                    logger.info("Initialised new git repository at %s", self.repo_path)
+                    self._create_initial_commit()
+            else:
+                self._repo = git.Repo.init(self.repo_path)
+                logger.info("Initialised new git repository at %s", self.repo_path)
+                self._create_initial_commit()
 
-        if self.remote_url:
-            if "origin" not in [r.name for r in self._repo.remotes]:
-                self._repo.create_remote("origin", self.remote_url)
-                logger.info("Added remote 'origin' → %s", self.remote_url)
-            try:
-                self._repo.remotes.origin.pull()
-                logger.info("Pulled latest changes from remote")
-            except Exception as exc:
-                logger.warning("Could not pull from remote: %s", exc)
+        workspaces_dir = self.repo_path / "workspaces"
+        workspaces_dir.mkdir(parents=True, exist_ok=True)
+
+        if self.remote_url and "origin" not in [r.name for r in self._repo.remotes]:
+            self._repo.create_remote("origin", self.remote_url)
+            logger.info("Added remote 'origin' → %s", self.remote_url)
+
+    def _create_initial_commit(self):
+        """Create initial commit in a new repository."""
+        workspaces_dir = self.repo_path / "workspaces"
+        workspaces_dir.mkdir(parents=True, exist_ok=True)
+        gitkeep = workspaces_dir / ".gitkeep"
+        gitkeep.touch()
+        self._repo.index.add([str(gitkeep.relative_to(self.repo_path))])
+        self._repo.index.commit(
+            "chore: initialise workspace repository",
+            author=self.author,
+            committer=self.author,
+        )
 
     async def close(self):
         """No persistent connection to close."""

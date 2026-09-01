@@ -3,13 +3,12 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ include "openeo-workspaces-api.fullname" . }}
+  name: allow-public-egress
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "openeo-workspaces-api.labels" . | nindent 4 }}
 spec:
-  podSelector:
-    matchLabels:
-      {{- include "openeo-workspaces-api.selectorLabels" . | nindent 6 }}
+  podSelector: {}
   policyTypes:
     - Ingress
     - Egress
@@ -40,13 +39,30 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
-    # Allow HTTPS to external services
+    # Allow Kubernetes API server
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: default
+          podSelector:
+            matchLabels:
+              component: kube-apiserver
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow public egress (SSH, HTTP, HTTPS for git and external services)
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
       ports:
         - protocol: TCP
+          port: 22
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
           port: 443
+        - protocol: UDP
+          port: 53
 {{- end }}
 
 {{- if .Values.podDisruptionBudget.enabled }}

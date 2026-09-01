@@ -136,9 +136,7 @@ secrets:
 
 # Network Policy
 networkPolicy:
-  enabled: false
-  ingress:
-    - from: []
+  enabled: true
 
 # Pod Disruption Budget
 podDisruptionBudget:

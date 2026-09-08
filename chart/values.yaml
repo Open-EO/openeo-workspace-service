@@ -119,12 +119,15 @@ oidc:
 git:
   repoPath: /app/data
   remoteUrl: ""
+  username: ""
   authorName: "Workspace Service"
   authorEmail: "workspace-service@openeo"
 
 
 # Environment variables
 env:
+  - name: GIT_USER
+    value: ""
   - name: LOG_LEVEL
     value: INFO
   - name: PYTHONUNBUFFERED
@@ -133,6 +136,7 @@ env:
 # Secrets (these will be filled in via CI/CD or secret management)
 secrets:
   oidcClientSecret: ""
+  gitPat: ""
 
 # Network Policy
 networkPolicy:

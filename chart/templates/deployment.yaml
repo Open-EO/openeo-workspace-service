@@ -48,6 +48,11 @@ spec:
                 secretKeyRef:
                   name: {{ include "openeo-workspaces-api.fullname" . }}-secrets
                   key: oidc_client_secret
+            - name: GIT_PAT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "openeo-workspaces-api.fullname" . }}-secrets
+                  key: git_pat
             {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -69,5 +74,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-
 

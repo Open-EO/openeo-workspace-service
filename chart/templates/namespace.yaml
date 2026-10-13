@@ -13,14 +13,13 @@ spec:
     - Ingress
     - Egress
   ingress:
-    # Allow from Ingress controller
+    {{- with .Values.networkPolicy.ingressFrom }}
     - from:
-        - namespaceSelector:
-            matchLabels:
-              name: ingress-nginx
+        {{- toYaml . | nindent 8 }}
       ports:
         - protocol: TCP
           port: 8000
+    {{- end }}
     # Allow from same namespace
     - from:
         - podSelector: {}

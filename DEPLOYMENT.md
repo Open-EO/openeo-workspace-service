@@ -196,6 +196,48 @@ helm upgrade openeo-workspaces ./chart \
   --values chart/values.yaml
 ```
 
+### Ingress Controller Network Access
+
+The network policy allows API traffic on TCP/8000 from the peers in
+`networkPolicy.ingressFrom` and from pods in the release namespace. The default
+controller peer selects namespaces labeled `name: ingress-nginx`.
+
+For a pod-networked controller, configure a `namespaceSelector` matching its
+namespace labels, optionally combined with a `podSelector` to restrict access to
+controller pods. Namespace selectors alone are not reliable for host-networked
+controllers; configure their routed source IPs as tightly scoped `ipBlock` CIDRs.
+These rules authorize traffic from the specified nodes, not exclusively the
+controller process.
+
+In `workspace-api-dev`, Traefik uses host networking. The
+`chart/values-workspace-api-dev.yaml` overlay permits its two current Calico VXLAN
+source IPs (`10.42.67.0` and `10.42.48.65`) on TCP/8000, rather than the node
+InternalIPs. Include this overlay after the existing deployment values in the
+Helm/Terraform deployment configuration:
+
+```bash
+helm upgrade workspace-api-dev ./chart \
+  --namespace workspace-api-dev \
+  --reuse-values \
+  --values chart/values-workspace-api-dev.yaml
+```
+
+Keep the overlay in sync when Traefik nodes are replaced or scaled. To check the
+current controllers and the source IP used to reach an API pod:
+
+```bash
+kubectl -n kube-system get pods -l app.kubernetes.io/name=traefik -o wide
+kubectl -n workspace-api-dev get pods -o wide
+kubectl -n kube-system exec <traefik-pod> -- ip route get <api-pod-ip>
+```
+
+Use the `src` address from each controller's route, checking every API backend.
+A live policy patch does not update Helm/Terraform values; add the overlay to
+the deployment configuration before the next deployment to prevent rollback.
+
+Do not disable the network policy or increase proxy timeouts to work around
+blocked controller traffic.
+
 ### Uninstall
 
 ```bash
@@ -358,4 +400,3 @@ kubectl exec -it <pod-name> -n openeo -- \
 - [OpenEO API Docs](https://openeo.org)
 - [FastAPI Deployment](https://fastapi.tiangolo.com/deployment/)
 - [Kubernetes Best Practices](https://kubernetes.io/docs/concepts/configuration/overview/)
-

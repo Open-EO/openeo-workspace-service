@@ -139,6 +139,12 @@ secrets:
 # Network Policy
 networkPolicy:
   enabled: true
+  # NetworkPolicy peers allowed to reach the API on TCP/8000.
+  # For host-networked controllers, use their routed source IPs as ipBlock CIDRs.
+  ingressFrom:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
 
 # Pod Disruption Budget
 podDisruptionBudget:

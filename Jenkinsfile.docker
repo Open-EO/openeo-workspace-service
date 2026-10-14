@@ -8,7 +8,8 @@ containerImageBuildPipeline {
   build_args           = [
   ]
   dockerfile           = 'Dockerfile'
-  docker_registry_prod = 'vito-docker.artifactory.vgt.vito.be'
+  docker_registry_prod = 'openeo-docker-local-prod.repo.vito.be'
+  credentials_id       = 'svc_openeo_jenkins'
   image_name           = 'openeo-workspace-service'
   image_tag            = { env -> "0.0.${env.BUILD_NUMBER}" }
   promotion_job        = false

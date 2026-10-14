@@ -20,14 +20,12 @@ pythonPipeline {
           "PYTHON_VERSION=3.11",
   ]
   python_version = ["3.11"]
-  docker_registry = 'vito-docker-private.artifactory.vgt.vito.be'
   downstream_job = 'openEO/openeo-workspace-service-docker'
   wheel_repo = ''
   wheel_repo_dev = ''
   test_module_name = 'workspace_service'
   upload_dev_wheels = false
   build_wheel = false
-  pep440 = true
   venv_rpm_deps = ['git'] /* ideally this is already in the test image */
   enable_caching = true
   enable_uv = true

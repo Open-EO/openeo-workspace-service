@@ -3,7 +3,11 @@
 @Library('lib')_
 
 helmchartPipeline{
-  chart_path       = './chart'
-  chart_repository = 'helm-public'
+  chart_path         = './chart'
+  chart_repository   = 'openeo-helm-local'
+  oci                = true
+  credentials_id     = 'svc_openeo_jenkins'
+  artifactory_server = 'sas'
+
   downstream_job = 'openEO/openeo-workspace-service-terraform-kubernetes-deploy-dev'
 }

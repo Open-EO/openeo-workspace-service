@@ -1,8 +1,8 @@
 """
 Pydantic models for request/response bodies
 """
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field, field_validator
+from typing import Optional, Dict, Any, List, Literal
+from pydantic import BaseModel, Field
 
 class ProviderParameters(BaseModel):
     """Provider-specific parameter definition"""
@@ -26,22 +26,16 @@ class WorkspaceProvidersResponse(BaseModel):
 
 class CreateWorkspaceRequest(BaseModel):
     """Request to create a new workspace"""
-    intent: str = "create"
+    intent: Literal["create"] = "create"
     title: Optional[str] = None
     description: Optional[str] = None
     type: Optional[str] = None
     parameters: Optional[Dict[str, Any]] = {}
     quota: Optional[int] = None
 
-    @field_validator('intent')
-    def validate_intent(cls, v):
-        if v not in ["create", "register"]:
-            raise ValueError('intent must be "create" or "register"')
-        return v
-
 class RegisterWorkspaceRequest(BaseModel):
     """Request to register an existing workspace"""
-    intent: str = "register"
+    intent: Literal["register"] = "register"
     title: Optional[str] = None
     description: Optional[str] = None
     type: str
@@ -100,4 +94,3 @@ class PaginationLink(BaseModel):
     rel: str
     href: str
     type: Optional[str] = None
-

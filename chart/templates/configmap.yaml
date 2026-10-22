@@ -10,6 +10,7 @@ data:
   DEFAULT_WORKSPACE_PROVIDER: "{{ .Values.config.defaultWorkspaceProvider }}"
   MAX_WORKSPACE_QUOTA_MB: "{{ .Values.config.maxWorkspaceQuotaMB }}"
   SUPPORTED_PROVIDERS: {{ toJson .Values.config.supportedProviders | quote }}
+  WORKSPACE_PROVIDERS_FILE: "/app/config/workspace_providers.json"
 
   OIDC_ISSUER_URL: "{{ .Values.oidc.issuerUrl }}"
   OIDC_CLIENT_ID: "{{ .Values.oidc.clientId }}"
@@ -21,4 +22,3 @@ data:
   GIT_REMOTE_URL: "{{ .Values.git.remoteUrl }}"
   GIT_AUTHOR_NAME: "{{ .Values.git.authorName }}"
   GIT_AUTHOR_EMAIL: "{{ .Values.git.authorEmail }}"
-

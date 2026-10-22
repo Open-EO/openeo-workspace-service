@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY main.py .
 COPY workspace_service/ ./workspace_service/
+COPY chart/files/workspace_providers.json ./chart/files/workspace_providers.json
 
 # Set ownership and permissions
 RUN chown -R appuser:appuser /app

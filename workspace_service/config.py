@@ -2,6 +2,7 @@
 Configuration settings for the OpenEO Workspaces API
 """
 import os
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
@@ -30,11 +31,14 @@ class Settings(BaseSettings):
     git_author_email: str = "workspace-service@openeo"
 
     # Workspace configuration
-    default_workspace_provider: str = "s3"
+    default_workspace_provider: str = "cloudferro"
     max_workspace_quota_mb: int = 1000000  # 1TB in megabytes
 
     # Supported providers
-    supported_providers: list = ["s3"]
+    supported_providers: list = ["cloudferro"]
+    workspace_providers_file: Path = (
+        Path(__file__).resolve().parent.parent / "chart/files/workspace_providers.json"
+    )
 
     def model_post_init(self, __context):
         """Expand environment variables in git_remote_url after initialization."""
@@ -43,4 +47,3 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
-

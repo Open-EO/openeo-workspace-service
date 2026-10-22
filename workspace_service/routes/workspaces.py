@@ -2,7 +2,9 @@
 Workspaces CRUD routes
 """
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
+from starlette.concurrency import run_in_threadpool
+from pydantic import ValidationError
 from typing import Optional
 from workspace_service.models import (
     WorkspacesListResponse,
@@ -13,6 +15,9 @@ from workspace_service.models import (
 )
 from workspace_service.auth import TokenData, verify_token
 from workspace_service import db
+from workspace_service.config import settings
+from workspace_service.provider_clients.registry import PROVIDER_CLIENTS
+from workspace_service.routes import providers
 import uuid
 from datetime import datetime
 
@@ -46,7 +51,8 @@ async def list_workspaces(
                 title=ws.get("title"),
                 description=ws.get("description"),
                 details=ws.get("details"),
-                quota=ws.get("quota")
+                quota=ws.get("quota"),
+                url=ws.get("url"),
             )
             for ws in workspaces
         ]
@@ -65,16 +71,44 @@ async def list_workspaces(
 @router.post("/workspaces", status_code=status.HTTP_201_CREATED)
 async def create_workspace(
     request: CreateWorkspaceRequest | RegisterWorkspaceRequest,
+    response: Response,
     token: TokenData = Depends(verify_token),
 ):
     """
     Creates a new workspace.
 
-    This request queues the creation of a workspace. It directly registers an id at the back-end,
-    but the workspace itself may have a status of `provisioning` until the workspace is ready to use.
+    Create provisions storage through the selected provider client and returns
+    ready bucket metadata. Register only records an existing workspace.
     """
     user_id = token.sub
     workspace_id = str(uuid.uuid4())
+    provider_type = (request.type or settings.default_workspace_provider).lower()
+    provider_client = None
+    parameters = None
+    if request.intent == "create":
+        advertised = providers.WORKSPACE_PROVIDERS.get(provider_type)
+        if advertised is None or "create" not in advertised.intents:
+            raise HTTPException(status_code=400, detail=f"Unsupported create provider: {provider_type}")
+        try:
+            provider_client = PROVIDER_CLIENTS.get(provider_type)
+        except (ImportError, TypeError):
+            logger.exception("Unable to initialize provider client %s", provider_type)
+            raise HTTPException(status_code=500, detail="Unable to initialize provider client")
+        if provider_client is None:
+            raise HTTPException(status_code=400, detail=f"Unsupported create provider: {provider_type}")
+        try:
+            parameters = provider_client.workspace_parameters.model_validate(request.parameters or {})
+            if parameters.bucket_name is None:
+                parameters.bucket_name = f"openeo-workspace-{workspace_id}"
+        except ValidationError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail=[{
+                    "loc": ["body", "parameters", *error["loc"]],
+                    "msg": error["msg"],
+                    "type": error["type"],
+                } for error in exc.errors(include_input=False, include_context=False)],
+            ) from exc
 
     try:
         client = db.get_client()
@@ -83,8 +117,11 @@ async def create_workspace(
         data = {
             "title": getattr(request, "title", None),
             "description": getattr(request, "description", None),
-            "type": getattr(request, "type", None) or "s3",
-            "parameters": getattr(request, "parameters", {}),
+            "type": provider_type,
+            "parameters": (
+                parameters.model_dump(exclude={"aws_access_key_id", "aws_secret_access_key"})
+                if parameters is not None else request.parameters
+            ),
             "quota": getattr(request, "quota", None),
         }
 
@@ -95,6 +132,31 @@ async def create_workspace(
         # Create workspace in database
         workspace = await client.create_workspace(workspace_id, user_id, data)
 
+        if provider_client is not None and parameters is not None:
+            try:
+                metadata = await run_in_threadpool(
+                    provider_client.provision_workspace, workspace_id, parameters,
+                )
+            except Exception:
+                logger.error("Provider provisioning failed for workspace %s", workspace_id)
+                await client.update_workspace(workspace_id, user_id, {
+                    "status": "unavailable",
+                    "details": "Bucket provisioning failed; storage may have been partially created.",
+                })
+                raise HTTPException(
+                    status_code=502,
+                    detail=f"Bucket provisioning failed for workspace {workspace_id}",
+                )
+            updated = await client.update_workspace(workspace_id, user_id, {
+                **metadata,
+                "status": "ready",
+                "details": "Workspace bucket provisioned",
+            })
+            if updated is None:
+                raise RuntimeError(f"Provisioned workspace {workspace_id} could not be saved")
+            response.headers["Location"] = f"{settings.api_prefix}/{settings.api_version}/workspaces/{workspace_id}"
+            return Workspace(**updated)
+
         # Return response with Location header
         return {
             "id": workspace_id,
@@ -102,8 +164,10 @@ async def create_workspace(
             "message": "Workspace creation has been queued successfully"
         }
 
-    except Exception as e:
-        logger.error(f"Failed to create workspace: {e}")
+    except HTTPException:
+        raise
+    except Exception:
+        logger.error("Failed to create workspace %s", workspace_id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create workspace"

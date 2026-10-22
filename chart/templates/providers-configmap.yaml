@@ -1,0 +1,14 @@
+{{- $providers := .Values.config.workspaceProvidersJson | default (.Files.Get "files/workspace_providers.json") -}}
+{{- $parsed := mustFromJson $providers -}}
+{{- if not (kindIs "map" $parsed) -}}
+{{- fail "config.workspaceProvidersJson must be a JSON object mapping provider names to definitions" -}}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "openeo-workspaces-api.fullname" . }}-providers
+  labels:
+    {{- include "openeo-workspaces-api.labels" . | nindent 4 }}
+data:
+  workspace_providers.json: |
+    {{- $providers | nindent 4 }}

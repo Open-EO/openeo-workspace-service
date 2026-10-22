@@ -2,37 +2,22 @@
 Workspace provider routes
 """
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import Dict, Any
+from pathlib import Path
+from fastapi import APIRouter, Depends
+from pydantic import TypeAdapter
 from workspace_service.models import WorkspaceProvidersResponse, WorkspaceProvider
 from workspace_service.auth import TokenData, verify_token_optional
+from workspace_service.config import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Define supported providers
-WORKSPACE_PROVIDERS: Dict[str, Dict[str, Any]] = {
-    "s3": {
-        "title": "S3",
-        "description": "S3 is a cloud storage service. It provides storage containers which are called buckets.",
-        "intents": ["create", "register"],
-        "parameters": {
-            "aws_access_key_id": {
-                "type": "string",
-                "description": "AWS access key"
-            },
-            "aws_secret_access_key": {
-                "type": "string",
-                "description": "AWS secret key associated with the access key."
-            },
-            "bucket_name": {
-                "type": "string",
-                "description": "Bucket name"
-            }
-        },
-        "links": []
-    }
-}
+def load_workspace_providers(path: Path) -> dict[str, WorkspaceProvider]:
+    """Load provider definitions, failing startup on missing or invalid configuration."""
+    return TypeAdapter(dict[str, WorkspaceProvider]).validate_json(path.read_bytes())
+
+
+WORKSPACE_PROVIDERS = load_workspace_providers(settings.workspace_providers_file)
 
 @router.get("/workspace_providers")
 async def list_workspace_providers(
@@ -44,9 +29,4 @@ async def list_workspace_providers(
 
     Workspace provider names MUST be accepted in a *case insensitive* manner throughout the API.
     """
-    providers = {}
-
-    for provider_name, provider_config in WORKSPACE_PROVIDERS.items():
-        providers[provider_name] = WorkspaceProvider(**provider_config)
-
-    return WorkspaceProvidersResponse(providers=providers)
+    return WorkspaceProvidersResponse(providers=WORKSPACE_PROVIDERS)

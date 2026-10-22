@@ -103,9 +103,12 @@ config:
   apiVersion: v1
 
   # Workspace configuration
-  defaultWorkspaceProvider: s3
+  defaultWorkspaceProvider: cloudferro
   maxWorkspaceQuotaMB: "1000000"  # 1TB in megabytes
-  supportedProviders: ["s3"]
+  supportedProviders: ["cloudferro"]
+  # Optional replacement JSON, e.g. --set-file config.workspaceProvidersJson=providers.json.
+  # Empty uses the chart's files/workspace_providers.json.
+  workspaceProvidersJson: ""
 
 # OIDC configuration
 oidc:
@@ -150,4 +153,3 @@ networkPolicy:
 podDisruptionBudget:
   enabled: false
   minAvailable: 1
-

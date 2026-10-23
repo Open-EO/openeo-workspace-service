@@ -198,45 +198,36 @@ helm upgrade openeo-workspaces ./chart \
 
 ### Ingress Controller Network Access
 
-The network policy allows API traffic on TCP/8000 from the peers in
-`networkPolicy.ingressFrom` and from pods in the release namespace. The default
-controller peer selects namespaces labeled `name: ingress-nginx`.
+Network policies are designed and managed by DevOps. The chart does not create
+a NetworkPolicy by default (`networkPolicy.enabled: false`). The development
+overlay and CDSE development deployment values explicitly disable it as well,
+including when upgrading a release that previously enabled it.
 
-For a pod-networked controller, configure a `namespaceSelector` matching its
-namespace labels, optionally combined with a `podSelector` to restrict access to
-controller pods. Namespace selectors alone are not reliable for host-networked
-controllers; configure their routed source IPs as tightly scoped `ipBlock` CIDRs.
-These rules authorize traffic from the specified nodes, not exclusively the
-controller process.
+Provide these requirements to DevOps when planning the deployment:
 
-In `workspace-api-dev`, Traefik uses host networking. The
-`chart/values-workspace-api-dev.yaml` overlay permits its two current Calico VXLAN
-source IPs (`10.42.67.0` and `10.42.48.65`) on TCP/8000, rather than the node
-InternalIPs. Include this overlay after the existing deployment values in the
-Helm/Terraform deployment configuration:
+- External HTTPS requests reach the API through the cluster's Traefik ingress
+  controller; Traefik must reach API pods on TCP/8000.
+- The API Service remains ClusterIP; API pods do not require direct public access.
+- Kubernetes readiness and liveness probes use `/health` on TCP/8000.
+- Outbound connectivity is needed for DNS, the configured OIDC provider,
+  Git storage, and enabled storage-provider APIs (HTTPS; SSH if used for Git).
 
-```bash
-helm upgrade workspace-api-dev ./chart \
-  --namespace workspace-api-dev \
-  --reuse-values \
-  --values chart/values-workspace-api-dev.yaml
-```
+DevOps should select the controller-access mechanism supported by the cluster's
+CNI and Traefik networking mode. Do not hardcode dynamically assigned pod,
+node or overlay source addresses, or assume another cluster's ingress namespace
+labels apply.
 
-Keep the overlay in sync when Traefik nodes are replaced or scaled. To check the
-current controllers and the source IP used to reach an API pod:
+For existing releases, coordinate rollout with DevOps: disabling chart management
+causes Helm to remove its previously managed `allow-public-egress` policy. It does
+not create replacement isolation. DevOps-managed policies must provide the
+required access and isolation; any other policies selecting the pods still apply.
+Changing the chart default alone does not override persisted Helm values, so set
+`networkPolicy.enabled: false` explicitly in the deployment configuration.
 
-```bash
-kubectl -n kube-system get pods -l app.kubernetes.io/name=traefik -o wide
-kubectl -n workspace-api-dev get pods -o wide
-kubectl -n kube-system exec <traefik-pod> -- ip route get <api-pod-ip>
-```
-
-Use the `src` address from each controller's route, checking every API backend.
-A live policy patch does not update Helm/Terraform values; add the overlay to
-the deployment configuration before the next deployment to prevent rollback.
-
-Do not disable the network policy or increase proxy timeouts to work around
-blocked controller traffic.
+For deployments where DevOps explicitly delegates policy management to this
+chart, `networkPolicy.enabled: true` remains available. Configure
+`networkPolicy.ingressFrom` with DevOps-approved peers before enabling it; the
+default empty list allows only same-namespace ingress on TCP/8000.
 
 ### Uninstall
 

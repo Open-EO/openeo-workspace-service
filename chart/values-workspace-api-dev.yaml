@@ -1,6 +1,4 @@
 networkPolicy:
-  ingressFrom:
-    - ipBlock:
-        cidr: 10.42.67.0/32
-    - ipBlock:
-        cidr: 10.42.48.65/32
+  # Network policies are owned and managed by DevOps.
+  enabled: false
+  ingressFrom: []

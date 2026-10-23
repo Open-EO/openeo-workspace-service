@@ -64,6 +64,43 @@ A FastAPI implementation of the [openEO Workspaces Extension](https://github.com
 
 ## Configuration
 
+### Publishing the Python clients
+
+The `Publish workspace clients` GitHub Actions workflow builds one PyPI
+distribution, **`openeo-workspace-clients`**, containing `workspace_service_client`
+and `workspace_service.provider_clients` (plus the minimal `workspace_service`
+package initializer). It does not package the API server, Helm configuration,
+`keys.json` or runtime data. Its metadata lives in
+`packaging/clients/pyproject.toml`; the existing root `setup.py` remains the
+API-service distribution.
+
+Before the first publication, create a PyPI trusted publisher (or pending
+publisher) for:
+
+| Setting | Value |
+|---------|-------|
+| PyPI project | `openeo-workspace-clients` |
+| GitHub owner | `Open-EO` |
+| Repository | `openeo-workspace-service` |
+| Workflow filename | `publish-clients.yml` |
+| Environment | `pypi` |
+
+Create the `pypi` GitHub repository environment and configure any desired
+approval/release-branch restrictions. Publishing uses short-lived OIDC credentials;
+no PyPI API-token secret is needed. The PyPI project name must be available or
+under your control.
+
+To publish, update the version in `packaging/clients/pyproject.toml`, commit it,
+and publish a GitHub release with the matching tag, for example
+`clients-v0.1.0`. Each version can only be published once. Other release tag
+prefixes are ignored. A manual workflow run builds and checks artifacts but
+**does not publish**. The workflow checks package contents and runs the client
+tests against the installed wheel outside the source checkout before publishing.
+
+Consumers install both clients with `pip install openeo-workspace-clients`.
+Avoid installing it alongside the API-service distribution in the same
+environment: both distributions own the `workspace_service` package.
+
 ### Workspace provider definitions
 
 The `/workspace_providers` response is loaded from

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openeo-workspace-clients"
+version = "0.1.0"
+description = "Python API and storage-provider clients for the openEO Workspace Service"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "OpenEO Consortium" }]
+dependencies = [
+    "httpx>=0.28.1,<1",
+    "pydantic>=2.10.5,<3",
+    "boto3>=1.36,<2",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+
+[project.urls]
+Repository = "https://github.com/Open-EO/openeo-workspace-service"
+
+[tool.setuptools]
+packages = [
+    "workspace_service_client",
+    "workspace_service",
+    "workspace_service.provider_clients",
+]
+include-package-data = false
